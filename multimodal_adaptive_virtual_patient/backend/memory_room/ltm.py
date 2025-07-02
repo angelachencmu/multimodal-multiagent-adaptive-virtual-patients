@@ -59,6 +59,10 @@ class LTM:
             print("[ERROR] Invalid score format received from GPT.")
             score = 0 
 
+    def returnLTMRepositoryToString(self, emotion):
+        repo = self.returnLTMRepository(emotion)
+        return f"\n".join(f"{i+1}. {item}" for i, item in enumerate(repo))
+
     def printLTM(self):
         print(f"Negative: {self.ltm[0]}")
         print(f"Nuetral: {self.ltm[1]}")

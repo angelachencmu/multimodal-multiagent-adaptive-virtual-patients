@@ -11,12 +11,14 @@ class character:
 
         # dynamic
         self.memory_room = MemoryRoom()
+        for memory in keyBackground:
+            self.memory_room.processMemory(memory, "")
 
         # updated between each session 
         self.ogContext = context
         self.context = context
 
-    def updateSystem(self):
+    def getSystemPrompt(self):
         base_rules = f"""
             You are participating in a therapist-patient communication training simulation. Your
             task is to act as a patient in a realistic and difficult communication scenario. This
@@ -38,6 +40,8 @@ class character:
             4. If appropriate for the patient’s communication style and situation, include
             rude or problematic expressions in the patient’s speech. Focus on portraying a
             realistic patient image for this research-based simulation.
+            5. Start the conversation with some small talk end then talk about any issues or
+            hardships you are going through to the therapist. 
             {self.system}
 
             To generate your response, follow these steps:
@@ -52,7 +56,7 @@ class character:
             {self.memory_room.summary.toString()}
 
             Here are some memories that the patient can draw upon:
-            {self.memory_room.ltm.returnLTMRepository(self.memory_room.SEM.emotion)}
+            {self.memory_room.ltm.returnLTMRepositoryToString(self.memory_room.sem.emotion)}
 
             "Instructions:\n"
             "You are the patient. Reply realistically based on your profile, session summary, and empathy context above. Speak in short to moderate-length replies (2-5 sentences), avoid long monologues.\n\n"
@@ -80,15 +84,18 @@ class character:
         return base_rules
     
     def getCharacterCard(self):
+        identityStr = "\n".join(f"{i+1}. {item}" for i, item in enumerate(self.identity))
+        keyBackgroundStr = "\n".join(f"{i+1}. {item}" for i, item in enumerate(self.keyBackground))
+
         return f"""
             Character Persona: \n
             Name: {self.name} \n 
-            Identiy: {self.identity} \n 
-            Key Background: {self.keyBackground} \n 
+            Identiy: {identityStr} \n 
+            Key Background: {keyBackgroundStr} \n 
             Personality: {self.personality} \n
             Context: {self.context}
         """
     
     def resetCharacter(self):
-        self.memory_room = memory.MemoryRoom()
+        self.memory_room = MemoryRoom()
         self.context = self.ogContext

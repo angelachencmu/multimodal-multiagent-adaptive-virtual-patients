@@ -1,5 +1,8 @@
 import memory_room.ltm as ltm
 import character as Character
+import gpt as gpt 
+
+messages = []
 
 def getAlex():
     return {
@@ -33,4 +36,15 @@ if __name__ == "__main__":
         alexCard["context"]
     )
 
-    print(alex.getCharacterCard())
+    print(alex.getSystemPrompt())
+
+    messages.append({"role": "system", "content": alex.getSystemPrompt()}  )
+    while True:
+        user_input = input("You: ").strip()
+        if user_input.lower() in ["quit", "exit", "bye"]:
+            print("Ending conversation.")
+            break
+
+        reply, messages = gpt.queryGPT(messages, message=user_input)
+
+        print(f"VP: {reply}\n")
