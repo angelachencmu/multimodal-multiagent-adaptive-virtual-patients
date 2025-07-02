@@ -12,6 +12,9 @@ class LTM:
     
     # memory: (ranking, memory)
     def addToLTM(self, memory):
+        if(memory[0] < 5):
+            return
+        
         messages = [{"role" : "system",
             "content":"You are an intelligent assistant. Return 0, 1, or 2. Only return the numerical equivalent one of the 3 emotion classifiers: Neutral (1), Negative (0), Positive (2)",
             }]
