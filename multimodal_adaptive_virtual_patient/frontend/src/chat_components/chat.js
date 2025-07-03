@@ -1,11 +1,33 @@
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
 import { UserCircleIcon } from '@heroicons/react/24/solid';
 import { FaRobot } from 'react-icons/fa';
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-export default function Chat({ messages, setMessages, name, setName }) {
+export default function Chat({ messages, setMessages, name, session}) {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [currentSession, setCurrentSession] = useState(session)
+
+  useEffect(() => {
+    setCurrentSession(session);
+    console.log(session);
+  }, [session]);
+
+  const progressSession = async () => {
+    try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/progress-session`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+        });
+
+        const data = await response.json();
+        console.log(data.currentSession);
+        setCurrentSession(data.currentSession);
+        setMessages([])
+    } catch (error) {
+      console.error("Failed to fetch:", error);
+    }
+  };
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -38,8 +60,9 @@ export default function Chat({ messages, setMessages, name, setName }) {
                 <h1 className='text-white uppercase font-bold tracking-wide'>{name}</h1>
                 <div className='flex items-center justify-center gap-2'>
                     <button
+                    onClick={progressSession}
                     className="mt-2 px-4 py-1 rounded-full bg-teal tracking-wide border-2 border-solid duration-300 border-white text-white hover:tracking-wider hover:bg-white hover:text-teal"
-                >Next Session</button>
+                >Next Session: {currentSession + 1}</button>
                     <button
                         className="mt-2 px-4 py-1 duration-300"
                     >
@@ -49,7 +72,7 @@ export default function Chat({ messages, setMessages, name, setName }) {
                     </button>
                 </div>
             </div>
-            <div className="flex-1 overflow-y-auto bg-white p-5">
+            <div className="flex-1 overflow-y-auto bg-white p-5 transparent-scrollbar">
                 {messages.map((msg, index) => (
                     <div
                     key={index}

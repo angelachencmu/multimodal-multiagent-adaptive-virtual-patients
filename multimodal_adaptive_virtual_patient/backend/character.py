@@ -8,6 +8,7 @@ class character:
         self.keyBackground = keyBackground
         self.personality = personality
         self.system = system
+        self.sessionCount = 1
 
         # dynamic
         self.memory_room = MemoryRoom()
@@ -96,6 +97,14 @@ class character:
             Context: {self.context}
         """
     
+    def progressSession(self):
+        self.sessionCount += 1
+        self.memory_room.progressSession()
+    
     def resetCharacter(self):
-        self.memory_room = MemoryRoom()
+        if (self.sessionCount == 1):
+            self.memory_room = MemoryRoom()
+        else:
+            self.memory_room.resetSession()
+
         self.context = self.ogContext

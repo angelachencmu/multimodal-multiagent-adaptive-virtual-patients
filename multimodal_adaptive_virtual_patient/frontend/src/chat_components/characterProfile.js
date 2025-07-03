@@ -1,6 +1,6 @@
 export default function CharacterProfile({ changeCharacter, characterCard }) {
   return (
-    <div className="flex flex-col h-full p-4 w-full gap-5 overflow-y-auto">
+    <div className="flex flex-col h-full p-4 w-full gap-5 overflow-y-auto transparent-scrollbar">
         <div className="flex-none flex flex-col border p-5 rounded-xl shadow bg-white w-full text-center">
             <h1 className="text-blue uppercase font-bold tracking-wide mb-5 text-xl">Character Selection</h1>
             <div className="flex gap-2">

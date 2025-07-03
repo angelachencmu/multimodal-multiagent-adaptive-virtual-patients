@@ -10,6 +10,10 @@ class LTM:
         # ltm[0] = negative, ltm[1] = neutral, ltm[2] = positive
         self.ltm = [[], [], []]
     
+    # TODO: Create a progression mech that resorts ltm
+    def progressSession(self):
+        return
+    
     # memory: (ranking, memory)
     def addToLTM(self, memory):
         if(memory[0] < 5):

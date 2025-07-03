@@ -150,6 +150,26 @@ theo = Character.character(
 messages = []
 globalCurrentUser = alex
 
+@app.route("/progress-session", methods=["POST"])
+def progress_session():
+    global globalCurrentUser
+    
+    characters = {
+        "Alex": alex,
+        "Steph": steph,
+        "Sam": sam,
+        "Theo": theo,
+    }
+
+    char = characters.get(globalCurrentUser.name)
+    char.progressSession()
+    globalCurrentUser = char
+
+    global messages 
+    messages = []
+
+    return jsonify({"currentSession": globalCurrentUser.sessionCount})
+
 @app.route("/change-character", methods=["POST"])
 def changeCharacter():
     global globalCurrentUser
@@ -167,12 +187,15 @@ def changeCharacter():
     global messages 
     messages = []
 
+    print(globalCurrentUser.sessionCount)
+
     return jsonify({"characterCard": 
                     {"name": globalCurrentUser.name, 
                      "identity": globalCurrentUser.identity, 
                      "keyBackground": globalCurrentUser.keyBackground,
                      "personality": globalCurrentUser.personality,
-                     "context": globalCurrentUser.context}})
+                     "context": globalCurrentUser.context,
+                     "session": globalCurrentUser.sessionCount}})
 
 @app.route("/chat", methods=["POST"])
 def chat():

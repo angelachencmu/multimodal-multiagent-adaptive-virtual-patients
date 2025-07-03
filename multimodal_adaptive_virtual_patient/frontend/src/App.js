@@ -11,6 +11,7 @@ export default function App() {
     keyBackground: [],
     personality: "",
     context: "",
+    session: 0,
   });
 
   // Change character and clear chat
@@ -45,6 +46,7 @@ export default function App() {
           messages={messages}
           setMessages={setMessages}
           name={characterCard.name}
+          session={characterCard.session}
         />
       </div>
     </div>

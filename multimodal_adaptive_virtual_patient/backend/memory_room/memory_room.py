@@ -10,6 +10,15 @@ class MemoryRoom:
         self.sem = SEM()
         self.history = []
 
+    def progressSession(self):
+        self.resetSession()
+        self.ltm.progressSession()
+
+    def resetSession(self):
+        self.summary = Summary()
+        self.sem = SEM()
+        self.history = []
+
     def processMemory(self, vpResponse, userInput):
         importanceScore = self.score(vpResponse)
         self.ltm.addToLTM((importanceScore, vpResponse))
