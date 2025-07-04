@@ -1,4 +1,4 @@
-export default function CharacterMemory({ memoryInfo }) {
+export default function CharacterMemory({ memoryInfo, SEM }) {
   return (
     <div className="flex flex-col h-full px-5 w-full gap-5 overflow-y-auto transparent-scrollbar">
       <div className="flex-none flex flex-col gap-5 border p-4 rounded-xl shadow bg-coral w-full text-white">
@@ -14,8 +14,9 @@ export default function CharacterMemory({ memoryInfo }) {
           <p>{memoryInfo.fullRepo ?? "(none)"}</p>
         </div>
       </div>
-      <div className="flex-none flex flex-col h-96 border p-4 rounded-xl shadow bg-teal w-full text-white">
+      <div className="flex-none flex flex-col h-96 border p-4 rounded-xl shadow bg-purple w-full text-white">
         <h1 className="uppercase font-bold tracking-wide mb-5 text-xl">SEM Information</h1>
+        <h3><strong>Emotion:</strong> {SEM.emotion ?? "(none)"} </h3>
       </div>
     </div>
   )

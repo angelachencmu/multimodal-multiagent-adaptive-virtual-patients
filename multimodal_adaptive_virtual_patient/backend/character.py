@@ -13,7 +13,7 @@ class character:
         # dynamic
         self.memory_room = MemoryRoom()
         for memory in keyBackground:
-            self.memory_room.processMemory(memory, "")
+            self.memory_room.processMemory(memory, "InitiateMem801")
 
         # updated between each session 
         self.ogContext = context

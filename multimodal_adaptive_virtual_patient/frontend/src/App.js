@@ -5,6 +5,7 @@ import CharacterProfile from "./chat_components/characterProfile";
 export default function App() {
   // Shared state
   const [messages, setMessages] = useState([]);
+  const [selected, setSelected] = useState(false);
   const [characterCard, setCharacterCard] = useState({
     name: "",
     identity: [],
@@ -28,6 +29,8 @@ export default function App() {
 
       // Clear chat and name on character switch
       setMessages([]);
+      setSelected(true);
+      console.log(selected);
     } catch (error) {
       console.error("Error changing character:", error);
     }
@@ -43,6 +46,7 @@ export default function App() {
       </div>
       <div className="h-[95vh] w-3/4">
         <Chat
+          selected = {selected}
           messages={messages}
           setMessages={setMessages}
           name={characterCard.name}

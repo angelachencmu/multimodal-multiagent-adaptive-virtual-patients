@@ -4,14 +4,17 @@ import { FaRobot } from 'react-icons/fa';
 import { useState, useEffect } from "react";
 import CharacterMemory from './characterMemory';
 
-export default function Chat({ messages, setMessages, name, session}) {
+export default function Chat({selected, messages, setMessages, name, session}) {
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const [currentSession, setCurrentSession] = useState(session)
     const [characterMemory, setCharacterMemory] = useState({
         summary: "",
-        currentRepo: -1,
+        currentRepo: "",
         fullRepo: "",
+    });
+    const [SEM, setSEM] = useState({
+        emotion: "",
     });
 
     useEffect(() => {
@@ -32,6 +35,21 @@ export default function Chat({ messages, setMessages, name, session}) {
         console.error("Failed to fetch:", error);
         }
     };
+
+    const getSEM = async() => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/get-SEM-info`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: input }),
+            });
+
+            const data = await response.json();
+            setSEM(data.SEM);
+        } catch (error) {
+            console.error("Failed to fetch:", error);
+        }
+    }
 
     const getCharacterMemory = async() => {
         try {
@@ -68,6 +86,7 @@ export default function Chat({ messages, setMessages, name, session}) {
         const botMessage = { role: "assistant", content: data.reply };
         setMessages((prev) => [...prev, botMessage]);
         getCharacterMemory();
+        getSEM();
         } catch (error) {
         console.error("Failed to fetch:", error);
         } finally {
@@ -83,10 +102,12 @@ export default function Chat({ messages, setMessages, name, session}) {
                         <h1 className='text-white uppercase font-bold tracking-wide'>{name}</h1>
                         <div className='flex items-center justify-center gap-2'>
                             <button
+                            disabled={!selected}
                             onClick={progressSession}
                             className="mt-2 px-4 py-1 rounded-full bg-teal tracking-wide border-2 border-solid duration-300 border-white text-white hover:tracking-wider hover:bg-white hover:text-teal"
                         >Next Session: {currentSession + 1}</button>
                             <button
+                                disabled={!selected}
                                 className="mt-2 px-4 py-1 duration-300"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="white" className="size-6">
@@ -124,6 +145,7 @@ export default function Chat({ messages, setMessages, name, session}) {
                     )}
                     <div className="flex items-center bg-teal p-2 rounded-b-lg">
                         <input
+                            disabled={!selected}
                             type="text"
                             placeholder="Type your message..."
                             value={input}
@@ -132,6 +154,7 @@ export default function Chat({ messages, setMessages, name, session}) {
                             className="border p-2 w-full rounded-xl"
                         />
                         <button
+                            disabled={!selected}
                             onClick={sendMessage}
                             className="ml-2 px-4 py-2 rounded"
                         >
@@ -140,7 +163,7 @@ export default function Chat({ messages, setMessages, name, session}) {
                     </div>
                 </div>
                 <div className='w-1/3'>
-                    <CharacterMemory memoryInfo={characterMemory} />
+                    <CharacterMemory memoryInfo={characterMemory} SEM = {SEM} />
                 </div>
             </div>
         </div>

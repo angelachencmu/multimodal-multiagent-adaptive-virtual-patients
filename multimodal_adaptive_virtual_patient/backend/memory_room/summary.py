@@ -24,5 +24,5 @@ class Summary:
     def __str__(self):
         summaryString = " "
         for i in range(len(self.summaryHistory)):
-            summaryString += f"Checkpoint {i}: {self.summaryHistory[i]} \n"
+            summaryString += f"Checkpoint {i + 1}: {self.summaryHistory[i]} \n"
         return summaryString

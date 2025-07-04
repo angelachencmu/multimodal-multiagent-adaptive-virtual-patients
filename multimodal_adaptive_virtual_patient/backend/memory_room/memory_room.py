@@ -22,6 +22,13 @@ class MemoryRoom:
     def processMemory(self, vpResponse, userInput):
         importanceScore = self.score(vpResponse)
         self.ltm.addToLTM((importanceScore, vpResponse))
+        if userInput != "InitiateMem801":
+            self.history.append((f"Therapist: {userInput}"))
+            self.history.append((f"Patient: {vpResponse}"))
+            if len(self.history)  == 6:
+                print("Starting checkpoint updates")
+                self.summary.createSummary(self.history)
+                self.history = []
     
     def score(self, conversation):
         messages = [{"role":"system",

@@ -107,6 +107,8 @@ def getTheo():
         """
     }
 
+# TODO: Initialize in parallel
+
 alexCard = getAlex()
 alex = Character.character(
     alexCard["name"],
@@ -175,13 +177,30 @@ def get_character_memory():
     global globalCurrentUser
 
     currentRepo, fullRepo = globalCurrentUser.memory_room.ltm.returnFullLTMRepositoryToString(globalCurrentUser.memory_room.sem.emotion)
+    
+    emotionClass = ""
+    if currentRepo == "0":
+        emotionClass = "Negative"
+    elif currentRepo == "1":
+        emotionClass = "Neutral"
+    else:
+        emotionClass = "Positive"
 
     return jsonify({
         "characterMemory": {
             "summary": str(globalCurrentUser.memory_room.summary),
-            "currentRepo": currentRepo,
+            "currentRepo": emotionClass,
             "fullRepo": fullRepo
-            }
+        }
+    })
+
+@app.route("/get-SEM-info", methods=["POST"])
+def get_sem_info():
+    global globalCurrentUser
+
+    return jsonify({
+        "SEM": {
+            "emotion": globalCurrentUser.memory_room.sem.emotion}
         })
 
 
@@ -214,18 +233,17 @@ def changeCharacter():
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    user_input = request.json.get("message", "")
+    userInput = request.json.get("message", "")
 
     global messages
     global globalCurrentUser
     if not messages:
         messages.append({"role": "system", "content": globalCurrentUser.getSystemPrompt()})
 
-    print(globalCurrentUser.name)
+    messages.append({"role": "user", "content": userInput})
 
-    messages.append({"role": "user", "content": user_input})
-
-    reply, messages = gpt.queryGPT(messages, message=user_input)
+    reply, messages = gpt.queryGPT(messages, message=userInput)
+    globalCurrentUser.memory_room.processMemory(reply, userInput)
 
     return jsonify({"reply": reply})
 
