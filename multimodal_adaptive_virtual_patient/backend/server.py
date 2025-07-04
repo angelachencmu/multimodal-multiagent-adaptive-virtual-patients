@@ -2,6 +2,7 @@ import os
 import memory_room.ltm as ltm
 import character as Character
 import gpt as gpt 
+from concurrent.futures import ThreadPoolExecutor
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -52,7 +53,6 @@ def getSteph():
         """
     }
 
-
 def getSam():
     return {
         "name": "Sam",
@@ -62,6 +62,7 @@ def getSam():
         "system": """
             Don’t say this immediately: You fight a lot about you not being active enough and not putting enough effort into
             your social life
+            One of your first responses should be: "Me and my girlfriend have been fighting because I didn’t want to go to brunch with her friends"
             Work is stressful and you feel like you put too much on your girlfriend.
             Don’t say this immediately: Your supervisor told you to be more engaging, but when you added interactive learning,
             the kids got rowdy.
@@ -107,47 +108,23 @@ def getTheo():
         """
     }
 
-# TODO: Initialize in parallel
+def makeCharacter(getFunc):
+    card = getFunc()
+    return Character.character(
+        card["name"],
+        card["identity"],
+        card["keyBackground"],
+        card["personality"],
+        card["system"],
+        card["context"]
+    )
 
-alexCard = getAlex()
-alex = Character.character(
-    alexCard["name"],
-    alexCard["identity"],
-    alexCard["keyBackground"],
-    alexCard["personality"],
-    alexCard["system"],
-    alexCard["context"]
-)
+get_funcs = [getAlex, getSteph, getSam, getTheo]
 
-stephCard = getSteph()
-steph = Character.character(
-    stephCard["name"],
-    stephCard["identity"],
-    stephCard["keyBackground"],
-    stephCard["personality"],
-    stephCard["system"],
-    stephCard["context"]
-)
+with ThreadPoolExecutor() as executor:
+    characters = list(executor.map(makeCharacter, get_funcs))
 
-samCard = getSam()
-sam = Character.character(
-    samCard["name"],
-    samCard["identity"],
-    samCard["keyBackground"],
-    samCard["personality"],
-    samCard["system"],
-    samCard["context"]
-)
-
-theoCard = getTheo()
-theo = Character.character(
-    theoCard["name"],
-    theoCard["identity"],
-    theoCard["keyBackground"],
-    theoCard["personality"],
-    theoCard["system"],
-    theoCard["context"]
-)
+alex, steph, sam, theo = characters
 
 messages = []
 globalCurrentUser = alex

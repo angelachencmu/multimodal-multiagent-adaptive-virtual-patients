@@ -30,7 +30,8 @@ export default function Chat({selected, messages, setMessages, name, session}) {
             });
 
             const data = await response.json();
-            setCharacterMemory(data.characterCard);
+            setCurrentSession(data.currentSession);
+            // TODO: Clear chat history after starting the next session
         } catch (error) {
         console.error("Failed to fetch:", error);
         }
