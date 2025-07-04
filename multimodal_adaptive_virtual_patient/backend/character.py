@@ -54,7 +54,7 @@ class character:
             on their profile and the current situation.
 
             Here is a summarized current state of the patient:
-            {self.memory_room.summary.toString()}
+            {str(self.memory_room.summary)}
 
             Here are some memories that the patient can draw upon:
             {self.memory_room.ltm.returnLTMRepositoryToString(self.memory_room.sem.emotion)}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Chat from "./chat_components/chat";
 import CharacterProfile from "./chat_components/characterProfile";
 
@@ -41,7 +41,7 @@ export default function App() {
           characterCard={characterCard}
         />
       </div>
-      <div className="h-[95vh] w-1/2">
+      <div className="h-[95vh] w-3/4">
         <Chat
           messages={messages}
           setMessages={setMessages}

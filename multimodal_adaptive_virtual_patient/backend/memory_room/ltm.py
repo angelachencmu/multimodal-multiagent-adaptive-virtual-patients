@@ -47,13 +47,7 @@ class LTM:
         logLTM(self.printLTM())
 
     def returnLTMRepository(self, emotion):
-        messages = [{"role" : "system",
-            "content":"You are an intelligent assistant. Return 0, 1, or 2. Only return the numerical equivalent one of the 3 emotion classifiers: Neutral (1), Negative (0), Positive (2)",
-            }]
-        score, messages = gpt.queryGPT(
-            messages,
-            message=f"Classify the following memory into one of 3 different groups (Neutral (1), Negative (0), Positive (2)), rate the emotion:\n\n{emotion}"
-        )
+        score = self.returnCurrentEmotionStatus(emotion)
         try:
             score = int(score.strip())
             if not (0 <= score <= 2):
@@ -62,10 +56,36 @@ class LTM:
         except ValueError:
             print("[ERROR] Invalid score format received from GPT.")
             score = 0 
+    
+    def returnCurrentEmotionStatus(self, emotion):
+        messages = [{"role" : "system",
+            "content":"You are an intelligent assistant. Return 0, 1, or 2. Only return the numerical equivalent one of the 3 emotion classifiers: Neutral (1), Negative (0), Positive (2)",
+            }]
+        score, messages = gpt.queryGPT(
+            messages,
+            message=f"Classify the following memory into one of 3 different groups (Neutral (1), Negative (0), Positive (2)), rate the emotion:\n\n{emotion}"
+        )
+        return score
 
     def returnLTMRepositoryToString(self, emotion):
         repo = self.returnLTMRepository(emotion)
         return f"\n".join(f"{i+1}. {item}" for i, item in enumerate(repo))
+    
+    def returnFullLTMRepositoryToString(self, emotion):
+        categories = ["Negative", "Neutral", "Positive"]
+        result = []
+
+        for idx, category in enumerate(categories):
+            items = self.ltm[idx]
+            if items:
+                result.append(f"{category}:")
+                result.extend(f"  {i+1}. {item}" for i, item in enumerate(items))
+            else:
+                result.append(f"{category}: (empty)")
+
+        score = self.returnCurrentEmotionStatus(emotion)
+        
+        return (score, "\n".join(result))
 
     def printLTM(self):
         print(f"Negative: {self.ltm[0]}")

@@ -13,7 +13,7 @@ class Summary:
         }]
         summary, messages = gpt.queryGPT(
             messages,
-            message=f"Return a couple sentence summary of the current conversation: {self.recentMemories}"
+            message=f"Return a couple sentence summary of the current conversation: {history}"
         )
         self.summaryHistory.append(summary)
 
@@ -21,8 +21,8 @@ class Summary:
     # Checkpoint 1: ...
     # Checkpoint 2: ...
     # Checkpoint n: ...
-    def toString(self):
-        summaryString = ""
+    def __str__(self):
+        summaryString = " "
         for i in range(len(self.summaryHistory)):
             summaryString += f"Checkpoint {i}: {self.summaryHistory[i]} \n"
         return summaryString

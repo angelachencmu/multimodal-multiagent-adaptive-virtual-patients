@@ -9,7 +9,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 
 from flask_cors import CORS
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 def getAlex():
     return {
@@ -169,6 +169,21 @@ def progress_session():
     messages = []
 
     return jsonify({"currentSession": globalCurrentUser.sessionCount})
+
+@app.route("/get-character-memory", methods=["POST"])
+def get_character_memory():
+    global globalCurrentUser
+
+    currentRepo, fullRepo = globalCurrentUser.memory_room.ltm.returnFullLTMRepositoryToString(globalCurrentUser.memory_room.sem.emotion)
+
+    return jsonify({
+        "characterMemory": {
+            "summary": str(globalCurrentUser.memory_room.summary),
+            "currentRepo": currentRepo,
+            "fullRepo": fullRepo
+            }
+        })
+
 
 @app.route("/change-character", methods=["POST"])
 def changeCharacter():
