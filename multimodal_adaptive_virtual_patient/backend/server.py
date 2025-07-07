@@ -127,7 +127,8 @@ with ThreadPoolExecutor() as executor:
 alex, steph, sam, theo = characters
 
 messages = []
-globalCurrentUser = alex
+
+globalCurrentUser = sam
 
 @app.route("/progress-session", methods=["POST"])
 def progress_session():
@@ -177,7 +178,9 @@ def get_sem_info():
 
     return jsonify({
         "SEM": {
-            "emotion": globalCurrentUser.memory_room.sem.emotion}
+            "emotion": globalCurrentUser.memory_room.sem.emotion,
+            "depression": globalCurrentUser.memory_room.sem.depression,
+            "empathy": globalCurrentUser.memory_room.sem.empathy}
         })
 
 

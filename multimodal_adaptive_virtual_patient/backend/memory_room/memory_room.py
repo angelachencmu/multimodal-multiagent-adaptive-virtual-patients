@@ -1,6 +1,6 @@
 from .ltm import LTM
 from .summary import Summary
-from .SEM import SEM
+from .SEM.SEM import SEM
 import gpt as gpt 
 
 class MemoryRoom:
@@ -23,12 +23,29 @@ class MemoryRoom:
         importanceScore = self.score(vpResponse)
         self.ltm.addToLTM((importanceScore, vpResponse))
         if userInput != "InitiateMem801":
-            self.history.append((f"Therapist: {userInput}"))
-            self.history.append((f"Patient: {vpResponse}"))
+            self.utteranceAnalysis(vpResponse, userInput)
             if len(self.history)  == 6:
                 print("Starting checkpoint updates")
                 self.summary.createSummary(self.history)
                 self.history = []
+
+    def utteranceAnalysis(self, vpResponse, userInput):
+        self.sem.get_empathy_evaluation(self.getTherapistResponses(), userInput)
+        self.sem.detect_emotion(vpResponse)
+        self.sem.detect_depression(vpResponse)
+        self.history.append((f"Therapist: {userInput}"))
+        self.history.append((f"Patient: {vpResponse}"))
+
+    def getTherapistResponses(self):
+        if len(self.history) <= 2:
+            return []
+        
+        evenIndexed = [self.history[i] for i in range(len(self.history)) if i % 2 == 0]
+        
+        if len(evenIndexed) >= 2:
+            return evenIndexed[-2:]
+        else:
+            return evenIndexed
     
     def score(self, conversation):
         messages = [{"role":"system",

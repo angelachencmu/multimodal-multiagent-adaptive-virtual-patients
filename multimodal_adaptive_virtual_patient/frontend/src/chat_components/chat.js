@@ -14,7 +14,9 @@ export default function Chat({selected, messages, setMessages, name, session}) {
         fullRepo: "",
     });
     const [SEM, setSEM] = useState({
-        emotion: "",
+        emotion: [],
+        depression: [],
+        empathy: []
     });
 
     useEffect(() => {
