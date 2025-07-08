@@ -1,3 +1,5 @@
+import SEMSettingsForm from './characterForm';
+
 export default function CharacterProfile({ changeCharacter, characterCard }) {
   return (
     <div className="flex flex-col h-full p-4 w-full gap-5 overflow-y-auto transparent-scrollbar">
@@ -50,8 +52,8 @@ export default function CharacterProfile({ changeCharacter, characterCard }) {
             <h2><strong>Personality: </strong>{characterCard.personality}</h2>
             <h2><strong>Context: </strong>{characterCard.context}</h2>
         </div>
-        <div className="flex-none flex flex-col h-96 border p-4 rounded-xl shadow bg-white w-full">
-            SEM Customization
+        <div className="flex-none flex flex-col border p-4 rounded-xl shadow bg-white w-full">
+            <SEMSettingsForm/>
         </div>
     </div>
   );

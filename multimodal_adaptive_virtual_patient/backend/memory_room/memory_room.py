@@ -11,6 +11,10 @@ class MemoryRoom:
         self.summary = Summary()
         self.sem = SEM()
         self.history = []
+        self.config = DEFAULT_CONFIG
+    
+    def updateConfig(self, newConfig):
+        self.config = newConfig
 
     def progressSession(self):
         self.resetSession()
@@ -45,8 +49,7 @@ class MemoryRoom:
             "explanation": "No rapport score yet."
         }
 
-        config_used = DEFAULT_CONFIG
-        behavior_states = self.sem.compute_behavior_states(latestEmpathy, latest_rapport, config_used)
+        behavior_states = self.sem.compute_behavior_states(latestEmpathy, latest_rapport, self.config)
 
         depression_state = behavior_states["depression_state"]
         anxiety_state = behavior_states["anxiety_state"]

@@ -18,7 +18,7 @@ export default function CharacterMemory({ memoryInfo, SEM }) {
         <h1 className="uppercase font-bold tracking-wide mb-5 text-xl">SEM Information</h1>
         <div className="flex-none flex flex-col border p-4 rounded-xl shadow bg-white w-full text-purple">
           <h2 className="uppercase font-bold tracking-wide mb-5 text-lg">Emotion</h2>
-          <div className="max-h-32 overflow-y-auto">
+          <div className="max-h-32 overflow-y-auto transparent-scrollbar">
             {SEM.emotion.slice().map((emotion, index) => (
               <div key={index}>
                 <h3>Turn {index + 1}: {emotion ?? "(none)"} </h3>
@@ -28,7 +28,7 @@ export default function CharacterMemory({ memoryInfo, SEM }) {
         </div>
         <div className="flex-none flex flex-col border p-4 rounded-xl shadow bg-white w-full text-purple">
           <h2 className="uppercase font-bold tracking-wide mb-5 text-lg">Depression</h2>
-            <div className="max-h-32 overflow-y-auto">
+            <div className="max-h-32 overflow-y-auto transparent-scrollbar">
               {SEM.depression.slice().map((depression, index) => (
                 <div key={index}>
                   <h3>Turn {index + 1}: {depression ?? "(none)"} </h3>
@@ -38,7 +38,7 @@ export default function CharacterMemory({ memoryInfo, SEM }) {
         </div>
         <div className="flex-none flex flex-col border p-4 rounded-xl shadow bg-white w-full text-purple">
           <h2 className="uppercase font-bold tracking-wide mb-5 text-lg">Empathy Tracker</h2>
-            <div className="max-h-96 overflow-y-auto flex flex-col gap-5">
+            <div className="max-h-96 overflow-y-auto transparent-scrollbar flex flex-col gap-5">
               {SEM.empathy?.map((entry, index) => (
               <div key={index}>
                 <h3>Turn {index + 1}:</h3>
@@ -61,7 +61,7 @@ export default function CharacterMemory({ memoryInfo, SEM }) {
         </div>
         <div className="flex-none flex flex-col border p-4 rounded-xl shadow bg-white w-full text-purple">
           <h2 className="uppercase font-bold tracking-wide mb-5 text-lg">Rapport Tracker</h2>
-            <div className="max-h-96 overflow-y-auto flex flex-col gap-5">
+            <div className="max-h-96 overflow-y-auto transparent-scrollbar flex flex-col gap-5">
               {SEM.rapport?.map((entry, index) => (
               <div key={index}>
                 <h3>Checkpoint {index + 1}:</h3>
@@ -79,7 +79,7 @@ export default function CharacterMemory({ memoryInfo, SEM }) {
         </div>
         <div className="flex-none flex flex-col border p-4 rounded-xl shadow bg-white w-full text-purple">
           <h2 className="uppercase font-bold tracking-wide mb-5 text-lg">Behavioral States</h2>
-            <div className="max-h-96 overflow-y-auto flex flex-col gap-5">
+            <div className="max-h-96 overflow-y-auto transparent-scrollbar flex flex-col gap-5">
               {SEM.behaviorState?.map((entry, index) => (
               <div key={index}>
                 <h3>Turn {index + 1}:</h3>

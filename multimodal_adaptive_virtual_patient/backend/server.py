@@ -3,6 +3,10 @@ import memory_room.ltm as ltm
 import character as Character
 import gpt as gpt 
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+
+
+from memory_room.SEM.constants import DEFAULT_CONFIG
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -129,6 +133,33 @@ alex, steph, sam, theo = characters
 messages = []
 
 globalCurrentUser = sam
+
+CURRENT_CONFIG = DEFAULT_CONFIG.copy()
+
+@app.route("/new-weights", methods=["POST"])
+def set_new_weights():
+    data = request.get_json()
+
+    def deep_update(d, u):
+        for k, v in u.items():
+            if isinstance(v, dict):
+                d[k] = deep_update(d.get(k, {}), v)
+            else:
+                d[k] = v
+        return d
+
+    deep_update(CURRENT_CONFIG, data)
+
+    now = datetime.now()
+
+    current_time = now.strftime("%H:%M:%S")
+
+    globalCurrentUser.memory_room.updateConfig(CURRENT_CONFIG)
+
+    return jsonify({
+        "time": current_time,
+    })
+
 
 @app.route("/progress-session", methods=["POST"])
 def progress_session():

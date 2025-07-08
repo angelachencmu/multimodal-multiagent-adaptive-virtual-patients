@@ -195,7 +195,7 @@ class SEM:
         self.emotion.append(emotion)
 
     def compute_behavior_states(self, empathy_score, rapport_score=None, config_override=None):
-        config = copy.deepcopy(DEFAULT_CONFIG)
+        config = copy.deepcopy(config_override)
         if config_override:
             self.deep_update(config, config_override)
         
