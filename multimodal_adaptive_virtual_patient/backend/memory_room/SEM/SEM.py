@@ -216,7 +216,7 @@ class SEM:
         )
 
 
-        # --- Empathy-to-Rapport Mapping (Normalized to [1–7], centered at 4.5) ---
+        #Empathy-to-Rapport Mapping (Normalized to [1–7], centered at 4.5)
         rmw = config["rapport_mapping_weights"]
         i = empathy_score.get("interpretations", 0)
         e = empathy_score.get("explorations", 0)
@@ -224,22 +224,32 @@ class SEM:
         max_score = 2
         total_weight = sum(rmw.values())
 
-        normalized_raw = (
-            rmw["interpretations"] * i +
-            rmw["explorations"] * e +
-            rmw["emotional_reactions"] * r
-        ) / (total_weight * max_score)
+        if total_weight == 0:
+            normalized_raw = 0  # fallback if weights are misconfigured
+        else:
+            normalized_raw = (
+                rmw["interpretations"] * i +
+                rmw["explorations"] * e +
+                rmw["emotional_reactions"] * r
+            ) / (total_weight * max_score)
 
-        # Center normalized score at 4.5 (Likert midpoint) scaled to [1–7]
-        empathy_rapt_score = 3.0 * normalized_raw + 1.5
+        #center normalized score at 4.5 (Likert midpoint) scaled to [1–7]
+        empathy_rapt_score = 3.0 * normalized_raw + 2
         empathy_rapt_score = max(1.0, min(7.0, empathy_rapt_score))
 
 
         #blended rapport
-        if rapport_score and "overall_rating" in rapport_score:
-            llm_rapport = rapport_score["overall_rating"]
-        else:
-            llm_rapport = 4.0  # setting a default rapport score is neutral 4
+        llm_rapport = 4.0  # Default neutral
+        if rapport_score:
+            sub_scores = [
+                rapport_score.get("mutual_liking"),
+                rapport_score.get("confidence"),
+                rapport_score.get("appreciation"),
+                rapport_score.get("mutual_trust")
+            ]
+            valid_scores = [float(s) for s in sub_scores if isinstance(s, (int, float))]
+            if valid_scores:
+                llm_rapport = sum(valid_scores) / len(valid_scores)
 
         alpha = config.get("rapport_blend_weight", 0.7)
         blended_rapport = alpha * llm_rapport + (1 - alpha) * empathy_rapt_score

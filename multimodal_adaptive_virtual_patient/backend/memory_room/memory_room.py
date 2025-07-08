@@ -60,7 +60,7 @@ class MemoryRoom:
         #TODO: Figure out what this does because it isn't used in Siwei's code?
         weighted_empathy = behavior_states["weighted_empathy"]
 
-        self.sem.setBlendedRapport(empathy_rapt_score, blended_rapport)
+        self.sem.setBlendedRapport(round(empathy_rapt_score, 2), round(blended_rapport, 2))
         self.sem.setBehaviorState(depression_state, anxiety_state, self_disclosure_state)
 
         self.sem.detect_emotion(vpResponse)
