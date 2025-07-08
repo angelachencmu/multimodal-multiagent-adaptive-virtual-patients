@@ -19,3 +19,38 @@ SELF_DISCLOSURE_INSTRUCTIONS = {
     "Medium": "Share light personal details such as your background, hobbies, or family.",
     "High": "Reveal deeply personal experiences, thoughts, or struggles."
 }
+
+DEFAULT_CONFIG = {
+    "empathy_weights": {
+        "emotional_reactions": 0.4,
+        "interpretations": 0.3,
+        "explorations": 0.3
+    },
+    "rapport_mapping_weights": {
+        "interpretations": 0.103,
+        "explorations": 0.055,
+        "emotional_reactions": 0.017
+    },
+    "rapport_blend_weight": 0.7,
+    "difficulty_coefficient": 1.0,  #default difficulty coefficient
+
+    "depression_thresholds": {
+        "Very Slightly": 5.5,
+        "A Little": 4.5,
+        "Moderately": 3.5,
+        "Quite a Bit": 2.5,
+        "Extremely": 0.0
+    },
+    "anxiety_thresholds": {
+        "Very Slightly": 5.5,
+        "A Little": 4.5,
+        "Moderately": 3.5,
+        "Quite a Bit": 2.5,
+        "Extremely": 0.0
+    },
+    "self_disclosure_thresholds": {
+        "High": 2,
+        "Medium": 1,
+        "General": 0
+    }
+}

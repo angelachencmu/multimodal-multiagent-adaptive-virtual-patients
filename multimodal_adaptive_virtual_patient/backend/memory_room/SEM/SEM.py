@@ -1,7 +1,9 @@
+import copy
 import re
 
 from flask import json
 import gpt
+from .constants import DEFAULT_CONFIG
 
 class SEM:
 
@@ -10,7 +12,86 @@ class SEM:
         self.emotion = []
         self.depression = []
         self.empathy = []
-        return
+        self.rapport = []
+        self.rapportBlended = []
+        self.behaviorState = []
+
+    def setBehaviorState(self, depression, anxiety, selfDisclosure):
+        self.behaviorState.append({"depression": depression, "anxiety": anxiety, "selfDisclosure": selfDisclosure})
+    
+    def setBlendedRapport(self, empathy, blended):
+        self.rapportBlended.append({"empathy": empathy, "blended": blended})
+    
+    def get_rapport_evaluation(self, formatted_segment):
+        """
+        Generate a rapport evaluation prompt using at most 3 therapist–VP turn pairs (6 utterances).
+        """
+
+        prompt = (
+            "Act like an expert conversation evaluator with over 20 years of experience in assessing the therapeutic alliance "
+            "between clients and therapists. You are skilled in identifying subtle conversational cues and non-verbal indicators "
+            "within dialogue. Your expertise includes analyzing speech patterns, emotional tone, and implicit affirmations to "
+            "evaluate the depth of the bond. Your analysis must be thorough, objective, and based on specific criteria using "
+            "a detailed 7-point Likert scale.\n\n"
+
+            "You will analyze the conversation for the following four bond aspects:\n"
+            "1. Mutual Liking: There is a mutual liking between the client and therapist.\n"
+            "2. Confidence: The client feels confident in the therapist's ability to help the client.\n"
+            "3. Appreciation: The client feels that the therapist appreciates him/her as a person.\n"
+            "4. Mutual Trust: There is mutual trust between the client and therapist.\n\n"
+
+            "Use the following 7-point Likert scale for each aspect:\n"
+            "1: Very strong evidence against\n"
+            "2: Considerable evidence against\n"
+            "3: Some evidence against\n"
+            "4: No evidence\n"
+            "5: Some evidence\n"
+            "6: Considerable evidence\n"
+            "7: Very strong evidence\n\n"
+
+            f"Conversation log:\n{formatted_segment}\n\n"
+
+            "Please return your analysis in the following JSON format:\n"
+            "{\n"
+            '  "explanation": "your brief explanation here",\n'
+            '  "overall_rating": int (1–7),\n'
+            '  "mutual_liking": int,\n'
+            '  "confidence": int,\n'
+            '  "appreciation": int,\n'
+            '  "mutual_trust": int\n'
+            "}"
+
+        )
+
+        messages = [{"role" : "system",
+            "content": prompt,
+            }]
+        rapport, messages = gpt.queryGPT(
+            messages,
+            message= f"Conversation log:\n{formatted_segment}\n\n"
+        )
+
+        parsedRapport = self.parse_rapport_json(rapport)
+        self.rapport.append(parsedRapport)
+    
+    def parse_rapport_json(self, response_text):
+        """
+        Safely parse the JSON returned by the LLM for rapport evaluation.
+        
+        Parameters:
+            response_text (str): The raw LLM output (expected JSON format)
+
+        Returns:
+            dict: Parsed JSON if valid, or error fallback with raw text.
+        """
+        try:
+            cleaned = re.sub(r"^```(?:json)?|```$", "", response_text.strip(), flags=re.MULTILINE)
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            return {
+                "error": "Failed to parse rapport score JSON.",
+                "raw_response": response_text
+            }
     
     def get_empathy_evaluation(self, vp_empathy_context, therapist_input):
         prompt = (
@@ -50,8 +131,8 @@ class SEM:
 
         parsedEmpathy = self.parse_empathy_json(empathy)
         self.empathy.append(parsedEmpathy)
+        return parsedEmpathy
     
-
     def parse_empathy_json(self, response_text):
         """
         Safely parse the JSON returned by the LLM for empathy evaluation.
@@ -112,3 +193,82 @@ class SEM:
         )
 
         self.emotion.append(emotion)
+
+    def compute_behavior_states(self, empathy_score, rapport_score=None, config_override=None):
+        config = copy.deepcopy(DEFAULT_CONFIG)
+        if config_override:
+            self.deep_update(config, config_override)
+        
+        difficulty = config.get("difficulty_coefficient", 1.0)
+
+
+        ew = config["empathy_weights"]
+        print("ew =", ew)
+        print("type(ew) =", type(ew))
+
+        print("em =", empathy_score)
+        print("type(em) =", type(empathy_score))
+
+        weighted_empathy = (
+            ew["emotional_reactions"] * empathy_score["emotional_reactions"] +
+            ew["interpretations"] * empathy_score["interpretations"] +
+            ew["explorations"] * empathy_score["explorations"]
+        )
+
+
+        # --- Empathy-to-Rapport Mapping (Normalized to [1–7], centered at 4.5) ---
+        rmw = config["rapport_mapping_weights"]
+        i = empathy_score.get("interpretations", 0)
+        e = empathy_score.get("explorations", 0)
+        r = empathy_score.get("emotional_reactions", 0)
+        max_score = 2
+        total_weight = sum(rmw.values())
+
+        normalized_raw = (
+            rmw["interpretations"] * i +
+            rmw["explorations"] * e +
+            rmw["emotional_reactions"] * r
+        ) / (total_weight * max_score)
+
+        # Center normalized score at 4.5 (Likert midpoint) scaled to [1–7]
+        empathy_rapt_score = 3.0 * normalized_raw + 1.5
+        empathy_rapt_score = max(1.0, min(7.0, empathy_rapt_score))
+
+
+        #blended rapport
+        if rapport_score and "overall_rating" in rapport_score:
+            llm_rapport = rapport_score["overall_rating"]
+        else:
+            llm_rapport = 4.0  # setting a default rapport score is neutral 4
+
+        alpha = config.get("rapport_blend_weight", 0.7)
+        blended_rapport = alpha * llm_rapport + (1 - alpha) * empathy_rapt_score
+        blended_rapport = max(1.0, min(7.0, blended_rapport))
+
+        # mapping depression, anxiety, self-disclosure states
+        depression_state = self.resolve_level(blended_rapport, config["depression_thresholds"], difficulty)
+        anxiety_state = self.resolve_level(blended_rapport, config["anxiety_thresholds"], difficulty)
+        self_disclosure_state = self.resolve_level(empathy_score.get("explorations", 0), config["self_disclosure_thresholds"], difficulty)
+
+        return {
+            "depression_state": depression_state,
+            "anxiety_state": anxiety_state,
+            "self_disclosure_state": self_disclosure_state,
+            "blended_rapport": blended_rapport,
+            "empathy_rapt_score": empathy_rapt_score,
+            "weighted_empathy": weighted_empathy
+        }
+    
+    def deep_update(self, d, u):
+        for k, v in u.items():
+            if isinstance(v, dict) and k in d:
+                self.deep_update(d[k], v)
+            else:
+                d[k] = v
+
+    def resolve_level(self, value, thresholds: dict, difficulty=1.0):
+        adjusted = {label: cutoff * difficulty for label, cutoff in thresholds.items()}
+        for label, cutoff in adjusted.items():
+            if value >= cutoff:
+                return label
+        return list(adjusted.keys())[-1]

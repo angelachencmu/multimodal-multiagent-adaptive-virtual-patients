@@ -2,6 +2,8 @@ from .ltm import LTM
 from .summary import Summary
 from .SEM.SEM import SEM
 import gpt as gpt 
+from memory_room.SEM.constants import DEFAULT_CONFIG
+
 
 class MemoryRoom:
     def __init__(self):
@@ -27,14 +29,42 @@ class MemoryRoom:
             if len(self.history)  == 6:
                 print("Starting checkpoint updates")
                 self.summary.createSummary(self.history)
+                self.sem.get_rapport_evaluation(self.history)
                 self.history = []
 
     def utteranceAnalysis(self, vpResponse, userInput):
-        self.sem.get_empathy_evaluation(self.getTherapistResponses(), userInput)
+        # 1. Evaluate empathy
+        latestEmpathy = self.sem.get_empathy_evaluation(self.getTherapistResponses(), userInput)
+
+        # 2. Retrieve latest rapport for VP conditioning
+        past_rapport_scores = self.sem.rapport
+
+        # Flag to skip rapport blending if none exists yet
+        rapport_available = len(past_rapport_scores) > 0
+        latest_rapport = past_rapport_scores[-1] if rapport_available else {
+            "explanation": "No rapport score yet."
+        }
+
+        config_used = DEFAULT_CONFIG
+        behavior_states = self.sem.compute_behavior_states(latestEmpathy, latest_rapport, config_used)
+
+        depression_state = behavior_states["depression_state"]
+        anxiety_state = behavior_states["anxiety_state"]
+        self_disclosure_state = behavior_states["self_disclosure_state"]
+        blended_rapport = behavior_states["blended_rapport"]
+        empathy_rapt_score = behavior_states["empathy_rapt_score"]
+
+        #TODO: Figure out what this does because it isn't used in Siwei's code?
+        weighted_empathy = behavior_states["weighted_empathy"]
+
+        self.sem.setBlendedRapport(empathy_rapt_score, blended_rapport)
+        self.sem.setBehaviorState(depression_state, anxiety_state, self_disclosure_state)
+
         self.sem.detect_emotion(vpResponse)
         self.sem.detect_depression(vpResponse)
         self.history.append((f"Therapist: {userInput}"))
         self.history.append((f"Patient: {vpResponse}"))
+        
 
     def getTherapistResponses(self):
         if len(self.history) <= 2:

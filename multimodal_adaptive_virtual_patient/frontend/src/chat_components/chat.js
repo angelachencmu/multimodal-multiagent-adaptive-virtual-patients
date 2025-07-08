@@ -16,7 +16,10 @@ export default function Chat({selected, messages, setMessages, name, session}) {
     const [SEM, setSEM] = useState({
         emotion: [],
         depression: [],
-        empathy: []
+        empathy: [],
+        rapport: [],
+        rapportBlended: [],
+        behaviorState: []
     });
 
     useEffect(() => {
@@ -48,6 +51,7 @@ export default function Chat({selected, messages, setMessages, name, session}) {
             });
 
             const data = await response.json();
+            console.log(data.SEM)
             setSEM(data.SEM);
         } catch (error) {
             console.error("Failed to fetch:", error);

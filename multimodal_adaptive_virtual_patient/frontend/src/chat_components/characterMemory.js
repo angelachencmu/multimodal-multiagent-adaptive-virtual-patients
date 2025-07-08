@@ -51,12 +51,45 @@ export default function CharacterMemory({ memoryInfo, SEM }) {
                 )}
               </div>
             ))}
+            {SEM.rapportBlended?.map((entry, index) => (
+              <div key={index}>
+                <p><strong>Rapport Blended:</strong> {entry.blended}</p>
+                <p><strong>Empathy-Rapport Score:</strong> {entry.empathy}</p>
+              </div>
+            ))}
             </div>
         </div>
-        <h3><strong>Behavioral States:</strong>  </h3>
-        <h3><strong>Empathy Tracker:</strong> </h3>
-        <h3><strong>Rapport Tracker:</strong>  </h3>
-
+        <div className="flex-none flex flex-col border p-4 rounded-xl shadow bg-white w-full text-purple">
+          <h2 className="uppercase font-bold tracking-wide mb-5 text-lg">Rapport Tracker</h2>
+            <div className="max-h-96 overflow-y-auto flex flex-col gap-5">
+              {SEM.rapport?.map((entry, index) => (
+              <div key={index}>
+                <h3>Checkpoint {index + 1}:</h3>
+                <p><strong>Overall Rating:</strong> {entry.overall_rating}</p>
+                <p><strong>Mutual Liking:</strong> {entry.mutual_liking}</p>
+                <p><strong>Confidence:</strong> {entry.confidence}</p>
+                <p><strong>Appreciation:</strong> {entry.appreciation}</p>
+                <p><strong>Mutual Trust:</strong> {entry.mutual_trust}</p>
+                <p><strong>Explanation:</strong><br />
+                  <span className="text-gray-700">{entry.explanation}</span>
+                </p>
+              </div>
+            ))}
+            </div>
+        </div>
+        <div className="flex-none flex flex-col border p-4 rounded-xl shadow bg-white w-full text-purple">
+          <h2 className="uppercase font-bold tracking-wide mb-5 text-lg">Behavioral States</h2>
+            <div className="max-h-96 overflow-y-auto flex flex-col gap-5">
+              {SEM.behaviorState?.map((entry, index) => (
+              <div key={index}>
+                <h3>Turn {index + 1}:</h3>
+                <p><strong>Depression:</strong> {entry.depression}</p>
+                <p><strong>Anxiety:</strong> {entry.anxiety}</p>
+                <p><strong>Self-Disclosure:</strong> {entry.selfDisclosure}</p>
+              </div>
+            ))}
+            </div>
+        </div>
       </div>
     </div>
   )

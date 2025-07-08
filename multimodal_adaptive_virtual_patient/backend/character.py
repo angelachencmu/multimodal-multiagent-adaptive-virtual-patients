@@ -1,4 +1,5 @@
 from memory_room.memory_room import MemoryRoom
+from memory_room.SEM.constants import SELF_DISCLOSURE_INSTRUCTIONS, ANXIETY_INSTRUCTIONS, DEPRESSION_INSTRUCTIONS
 
 class character:
     def __init__(self, name, identity, keyBackground, personality, system, context):
@@ -20,6 +21,28 @@ class character:
         self.context = context
 
     def getSystemPrompt(self):
+        # 4. Get instruction strings
+        if self.memory_room.sem.behaviorState:
+            last_state = self.memory_room.sem.behaviorState[-1]
+            behaviorStates = {
+                "depression": last_state.get("depression"),
+                "anxiety": last_state.get("anxiety"),
+                "selfDisclosure": last_state.get("selfDisclosure")
+            }
+            depression_instruction = DEPRESSION_INSTRUCTIONS[behaviorStates["depression"]]
+            anxiety_instruction = ANXIETY_INSTRUCTIONS[behaviorStates["anxiety"]]
+            disclosure_instruction = SELF_DISCLOSURE_INSTRUCTIONS[behaviorStates["selfDisclosure"]]
+        else:
+            behaviorStates = {
+                "depression": None,
+                "anxiety": None,
+                "selfDisclosure": None
+            }
+
+            depression_instruction = ""
+            anxiety_instruction = ""
+            disclosure_instruction = ""
+
         base_rules = f"""
             You are participating in a therapist-patient communication training simulation. Your
             task is to act as a patient in a realistic and difficult communication scenario. This
@@ -59,6 +82,14 @@ class character:
             Here are some memories that the patient can draw upon:
             {self.memory_room.ltm.returnLTMRepositoryToString(self.memory_room.sem.emotion)}
 
+            Empathy Score History (Emotional Reactions, Interpretation, Explorations):\n{self.memory_room.sem.empathy}\n
+            Latest Empathy Evaluation Result:\n{self.memory_room.sem.empathy[:-1]}
+            Rapport Score History:\n{self.memory_room.sem.rapport}
+            The current rapport level between therapist and client:\n{self.memory_room.sem.rapport[:-1]}
+            Depression State: {behaviorStates["depression"]}: {depression_instruction}
+            Anxiety State: {behaviorStates["anxiety"]}: {anxiety_instruction}
+            Self-Disclosure: {behaviorStates["selfDisclosure"]}: {disclosure_instruction}
+
             "Instructions:\n"
             "You are the patient. Reply realistically based on your profile, session summary, and empathy context above. Speak in short to moderate-length replies (2-5 sentences), avoid long monologues.\n\n"
             "If empathy scores are low, remain emotionally guarded, skeptical, or withdrawn."
@@ -73,15 +104,7 @@ class character:
             Make up life experiences and background not specified in the instructions if applicable to the conversation. 
             "
         """
-        
-        #TODO: add SEM components into prompt
-        #The following is a simulated psychotherapy session between a therapist and a virtual patient.\n\n
-        # Latest Empathy Evaluation Result:\n{char.getEmpathy()}\n\n
-        # The current rapport level between therapist and client:\n{char.getRapport()}\n\n
-        # f"Empathy Score History (Emotional Reactions, Interpretation, Explorations):\n{empathy_score_history}\n"
-        # f"Latest Empathy Evaluation Result:\n{json.dumps(empathy_score, indent=2)}\n\n"
-        # f"Rapport Score History:\n{rapport_score_history}\n"
-        # f"The current rapport level between therapist and client:\n{json.dumps(rapport_score, indent=2, sort_keys=True)}\n\n"
+
         return base_rules
     
     def getCharacterCard(self):

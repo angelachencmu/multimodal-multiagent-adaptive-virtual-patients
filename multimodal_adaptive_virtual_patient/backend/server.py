@@ -180,7 +180,10 @@ def get_sem_info():
         "SEM": {
             "emotion": globalCurrentUser.memory_room.sem.emotion,
             "depression": globalCurrentUser.memory_room.sem.depression,
-            "empathy": globalCurrentUser.memory_room.sem.empathy}
+            "empathy": globalCurrentUser.memory_room.sem.empathy,
+            "rapport": globalCurrentUser.memory_room.sem.rapport,
+            "rapportBlended": globalCurrentUser.memory_room.sem.rapportBlended,
+            "behaviorState": globalCurrentUser.memory_room.sem.behaviorState}
         })
 
 
