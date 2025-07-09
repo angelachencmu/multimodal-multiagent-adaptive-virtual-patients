@@ -27,7 +27,7 @@ code {
 }
 
 .transparent-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #59c3c3;
+  background-color: #97C8D5;
   border-radius: 9999px;
   border: 2px solid transparent;
   background-clip: content-box;

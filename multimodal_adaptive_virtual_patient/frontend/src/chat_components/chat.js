@@ -1,6 +1,5 @@
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
 import { UserCircleIcon } from '@heroicons/react/24/solid';
-import { FaRobot } from 'react-icons/fa';
 import { useState, useEffect } from "react";
 import CharacterMemory from './characterMemory';
 
@@ -102,22 +101,22 @@ export default function Chat({selected, messages, setMessages, name, session}) {
     };
 
     return (
-        <div className="flex flex-col h-full w-full border p-4 rounded-xl shadow bg-lightGray">
+        <div className="flex flex-col h-full w-full border p-4 rounded-xl shadow bg-white">
             <div className='flex flex-grow h-full'>
                 <div className='w-2/3 flex flex-col h-full'>
                     <div className='h-16 bg-teal p-5 flex gap-5 items-center rounded-t-lg justify-between items-center'>
-                        <h1 className='text-white uppercase font-bold tracking-wide'>{name}</h1>
+                        <h1 className='text-purple uppercase font-bold tracking-wide'>{name}</h1>
                         <div className='flex items-center justify-center gap-2'>
                             <button
                             disabled={!selected}
                             onClick={progressSession}
-                            className="mt-2 px-4 py-1 rounded-full bg-teal tracking-wide border-2 border-solid duration-300 border-white text-white hover:tracking-wider hover:bg-white hover:text-teal"
+                            className="mt-2 px-4 py-1 rounded-full bg-teal tracking-wide border-2 border-solid duration-300 border-purple text-purple hover:tracking-wider hover:bg-white hover:text-teal"
                         >Next Session: {currentSession + 1}</button>
                             <button
                                 disabled={!selected}
                                 className="mt-2 px-4 py-1 duration-300"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="white" className="size-6">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="#1f7a8c" className="size-6">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
                                 </svg>
                             </button>
@@ -138,8 +137,8 @@ export default function Chat({selected, messages, setMessages, name, session}) {
                                 </>
                             ) : (
                                 <>
-                                <FaRobot className="flex-shrink-0 h-10 w-10 text-blue" />
-                                <div className="ml-2 py-3 px-4 bg-blue rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white max-w-[70%]">
+                                <UserCircleIcon className="flex-shrink-0 h-10 w-10 text-blue" />
+                                <div className="ml-2 py-3 px-4 bg-blue rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-purple max-w-[70%]">
                                     {msg.content}
                                 </div>
                                 </>
@@ -165,7 +164,7 @@ export default function Chat({selected, messages, setMessages, name, session}) {
                             onClick={sendMessage}
                             className="ml-2 px-4 py-2 rounded"
                         >
-                            <PaperAirplaneIcon className="h-8 w-8 text-white" />
+                            <PaperAirplaneIcon className="h-8 w-8 text-purple" />
                         </button>
                     </div>
                 </div>

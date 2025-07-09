@@ -82,8 +82,8 @@ export default function SEMSettingsForm() {
 
   return (
     <div className="flex flex-col h-full w-full gap-5 items-center my-5">
-        <h1 className="text-blue uppercase font-bold tracking-wide mb-3 text-xl">Behavioral Settings</h1>
-        <div className="flex-none flex flex-col border p-5 rounded-xl shadow bg-blue w-full text-white">
+        <h1 className="text-purple uppercase font-bold tracking-wide mb-3 text-xl">Behavioral Settings</h1>
+        <div className="flex-none flex flex-col border p-5 rounded-xl shadow bg-teal w-full text-purple">
             <h1 className="uppercase font-bold tracking-wide text-xl"  title="Weights should sum to 1.0">Empathy Weights</h1>
             <p className='mb-5'>Weights must sum to 1</p>
             <form className="flex flex-col gap-3">
@@ -97,7 +97,7 @@ export default function SEMSettingsForm() {
                     name="emotional_reactions_weight"
                     value={formData.emotional_reactions_weight}
                     onChange={handleChange}
-                    className="text-blue border rounded-xl p-2 w-full"
+                    className="text-purple border rounded-xl p-2 w-full"
                 />
             </label>
             <label>
@@ -110,7 +110,7 @@ export default function SEMSettingsForm() {
                 name="interpretations_weight"
                 value={formData.interpretations_weight}
                 onChange={handleChange}
-                className="text-blue border rounded-xl p-2 w-full"
+                className="text-purple border rounded-xl p-2 w-full"
                 />
             </label>
             <label>
@@ -123,13 +123,13 @@ export default function SEMSettingsForm() {
                 name="explorations_weight"
                 value={formData.explorations_weight}
                 onChange={handleChange}
-                className="text-blue border rounded-xl p-2 w-full"
+                className="text-purple border rounded-xl p-2 w-full"
                 />
             </label>
             </form>
         </div>
 
-        <div className="flex-none flex flex-col border p-5 rounded-xl shadow bg-blue w-full text-white">
+        <div className="flex-none flex flex-col border p-5 rounded-xl shadow bg-teal w-full text-purple">
             <h1 className="uppercase font-bold tracking-wide text-xl">SEM Coefficients for Rapport Inference</h1>
             <p className='mb-5'>Used to compute inferred rapport score from empathy scores</p>
             <form className="flex flex-col gap-3">
@@ -141,7 +141,7 @@ export default function SEMSettingsForm() {
                 name="interpretations_coeff"
                 value={formData.interpretations_coeff}
                 onChange={handleChange}
-                className="text-blue border rounded-xl p-2 w-full"
+                className="text-purple border rounded-xl p-2 w-full"
                 />
             </label>
             <label>
@@ -152,7 +152,7 @@ export default function SEMSettingsForm() {
                 name="explorations_coeff"
                 value={formData.explorations_coeff}
                 onChange={handleChange}
-                className="text-blue border rounded-xl p-2 w-full"
+                className="text-purple border rounded-xl p-2 w-full"
                 />
             </label>
             <label>
@@ -163,7 +163,7 @@ export default function SEMSettingsForm() {
                 name="emotional_reactions_coeff"
                 value={formData.emotional_reactions_coeff}
                 onChange={handleChange}
-                className="text-blue border rounded-xl p-2 w-full"
+                className="text-purple border rounded-xl p-2 w-full"
                 />
             </label>
             <label>
@@ -177,7 +177,7 @@ export default function SEMSettingsForm() {
                 name="rapport_blend_weight"
                 value={formData.rapport_blend_weight}
                 onChange={handleChange}
-                className="text-blue border rounded-xl p-2 w-full"
+                className="text-purple border rounded-xl p-2 w-full"
                 />
             </label>
             <label>
@@ -191,13 +191,13 @@ export default function SEMSettingsForm() {
                 name="difficulty_coefficient"
                 value={formData.difficulty_coefficient}
                 onChange={handleChange}
-                className="text-blue border rounded-xl p-2 w-full"
+                className="text-purple border rounded-xl p-2 w-full"
                 />
             </label>
             </form>
         </div>
 
-        <div className="flex-none flex flex-col border p-5 rounded-xl shadow bg-blue w-full text-white">
+        <div className="flex-none flex flex-col border p-5 rounded-xl shadow bg-teal w-full text-purple">
             <h1 className="uppercase font-bold tracking-wide mb-5 text-xl">Depression Thresholds</h1>
             <form className="flex flex-col gap-3">
             {['very_slightly','a_little','moderately','quite_a_bit','extremely'].map((level) => (
@@ -209,14 +209,14 @@ export default function SEMSettingsForm() {
                     name={`depression_${level}`}
                     value={formData[`depression_${level}`]}
                     onChange={handleChange}
-                    className="text-blue border rounded-xl p-2 w-full"
+                    className="text-purple border rounded-xl p-2 w-full"
                 />
                 </label>
             ))}
             </form>
         </div>
 
-        <div className="flex-none flex flex-col border p-5 rounded-xl shadow bg-blue w-full text-white">
+        <div className="flex-none flex flex-col border p-5 rounded-xl shadow bg-teal w-full text-purple">
             <h1 className="uppercase font-bold tracking-wide mb-5 text-xl">Anxiety Thresholds</h1>
             <form className="flex flex-col gap-3">
             {['very_slightly','a_little','moderately','quite_a_bit','extremely'].map((level) => (
@@ -228,7 +228,7 @@ export default function SEMSettingsForm() {
                     name={`anxiety_${level}`}
                     value={formData[`anxiety_${level}`]}
                     onChange={handleChange}
-                    className="text-blue border rounded-xl p-2 w-full"
+                    className="text-purple border rounded-xl p-2 w-full"
                 />
                 </label>
             ))}
@@ -238,7 +238,7 @@ export default function SEMSettingsForm() {
         <div className="flex-none flex flex-row gap-4 justify-center">
             <button
             onClick={handleSubmit}
-            className="mt-2 px-4 py-2 rounded-full bg-blue tracking-wide border-4 border-solid duration-300 border-blue text-white w-full uppercase font-bold hover:tracking-wider hover:bg-white hover:text-blue">
+            className="mt-2 px-4 py-2 rounded-full bg-teal tracking-wide border-4 border-solid duration-300 border-teal text-purple w-full uppercase font-bold hover:tracking-wider hover:bg-white hover:text-purple">
             Submit & Save Settings
             </button>
         </div>

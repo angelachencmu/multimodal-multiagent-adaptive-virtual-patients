@@ -6,11 +6,11 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        purple: '#52489c',
-        blue: '#4062bb',
-        teal: '#59c3c3',
+        purple: '#1f7a8c',
+        blue: '#e1e5f2',
+        teal: '#97C8D5',
         lightGray: '#ebebeb',
-        coral: '#f45b69',
+        coral: '#003459',
       },
     },
   },
