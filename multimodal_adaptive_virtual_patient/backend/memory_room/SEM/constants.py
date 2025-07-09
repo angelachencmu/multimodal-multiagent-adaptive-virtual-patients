@@ -32,21 +32,21 @@ DEFAULT_CONFIG = {
         "emotional_reactions": 0.017
     },
     "rapport_blend_weight": 0.7,
-    "difficulty_coefficient": 1.0,  #default difficulty coefficient
+    "difficulty_coefficient": 1.0,  
 
     "depression_thresholds": {
         "Very Slightly": 5.5,
         "A Little": 4.5,
         "Moderately": 3.5,
         "Quite a Bit": 2.5,
-        "Extremely": 0.0
+        "Extremely": 1.0
     },
     "anxiety_thresholds": {
         "Very Slightly": 5.5,
         "A Little": 4.5,
         "Moderately": 3.5,
         "Quite a Bit": 2.5,
-        "Extremely": 0.0
+        "Extremely": 1.0
     },
     "self_disclosure_thresholds": {
         "High": 2,
