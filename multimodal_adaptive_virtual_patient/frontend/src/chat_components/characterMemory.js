@@ -3,7 +3,7 @@ import { useState } from 'react';
 export default function CharacterMemory({ memoryInfo, SEM }) {
   const [openSections, setOpenSections] = useState({
     sessionSummary: true,
-    longTermMemory: true,
+    longTermMemory: false,
     emotion: true,
     depression: true,
     empathyTracker: true,
