@@ -1,9 +1,10 @@
 import os
-import memory_room.ltm as ltm
 import character as Character
 import gpt as gpt 
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
+
+import memory_room.ltm as ltm
 
 
 from memory_room.SEM.constants import DEFAULT_CONFIG
@@ -185,20 +186,13 @@ def progress_session():
 def get_character_memory():
     global globalCurrentUser
 
-    currentRepo, fullRepo = globalCurrentUser.memory_room.ltm.returnFullLTMRepositoryToString(globalCurrentUser.memory_room.sem.emotion)
-    
-    emotionClass = ""
-    if currentRepo == "0":
-        emotionClass = "Negative"
-    elif currentRepo == "1":
-        emotionClass = "Neutral"
-    else:
-        emotionClass = "Positive"
+    currentRepo = globalCurrentUser.memory_room.ltm.returnLTMRepositoryToString()
+    fullRepo = globalCurrentUser.memory_room.ltm.returnFullLTMRepositoryToString()
 
     return jsonify({
         "characterMemory": {
             "summary": str(globalCurrentUser.memory_room.summary),
-            "currentRepo": emotionClass,
+            "currentRepo": currentRepo,
             "fullRepo": fullRepo
         }
     })

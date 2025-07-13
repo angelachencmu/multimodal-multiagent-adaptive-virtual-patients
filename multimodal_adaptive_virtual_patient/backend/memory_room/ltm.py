@@ -1,4 +1,5 @@
 import gpt as gpt 
+import numpy as np
 
 VERBOSELTM = False  
 def logLTM(msg):
@@ -8,86 +9,46 @@ def logLTM(msg):
 class LTM:
     def __init__(self):
         # ltm[0] = negative, ltm[1] = neutral, ltm[2] = positive
-        self.ltm = [[], [], []]
+        self.ltm = []
     
     # TODO: Create a progression mech that resorts ltm
     def progressSession(self):
         return
     
-    # memory: (ranking, memory)
+    def cosineSimilarity(self, vec1, vec2):
+        v1 = np.array(vec1)
+        v2 = np.array(vec2)
+        if np.linalg.norm(v1) == 0 or np.linalg.norm(v2) == 0:
+            return 0.0
+        return np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+    
     def addToLTM(self, memory):
         if(memory[0] < 5):
             return
         
-        messages = [{"role" : "system",
-            "content":"You are an intelligent assistant. Return 0, 1, or 2. Only return the numerical equivalent one of the 3 emotion classifiers: Neutral (1), Negative (0), Positive (2)",
-            }]
-        emotionCategory, messages = gpt.queryGPT(
-            messages,
-            message=f"Classify the following memory into one of 3 different groups (Neutral (1), Negative (0), Positive (2)), rate the emotional association of the following piece of memory:\n\n{memory[1]}"
-        )
-        
-        try:
-            emotion = int(emotionCategory.strip())
-            if 0 <= emotion < len(self.ltm):
-                messages = [{"role" : "system",
-                    "content":"summarize the memory in one sentence by preserving the main ideas",
-                    }]
-                summarized, messages = gpt.queryGPT(
-                    messages,
-                    message=f"Summarize the following memory in second person (you pronouns) but keep the main concepts:\n\n{memory[1]}"
-                )
-                self.ltm[emotion].append(summarized)
-                logLTM(f"(emotion {emotion}): {summarized}")
-            else:
-                print(f"[ERROR] Invalid emotion index: {emotion}")
-        except ValueError:
-            print(f"[ERROR] GPT returned invalid emotion category: {emotionCategory}")  
-        
-        logLTM(self.printLTM())
+        embedding = gpt.getGPTEmbedding(memory[1])
+        self.ltm.append({
+            "memory": memory,
+            "embedding": embedding
+        })
 
-    def returnLTMRepository(self, emotion):
-        score = self.returnCurrentEmotionStatus(emotion)
-        try:
-            score = int(score.strip())
-            if not (0 <= score <= 2):
-                print("[ERROR] Chat didn't score correctly.")
-            return self.ltm[score]
-        except ValueError:
-            print("[ERROR] Invalid score format received from GPT.")
-            score = 0 
+    def returnLTMRepository(self, topN=5):
+        queryEmbedding = self.ltm[-1]['embedding']
+
+        memories = []
+        for item in self.ltm:
+            print(type(item['embedding']))
+            score = self.cosineSimilarity(queryEmbedding, item['embedding'])
+            memories.append((score, item['memory']))
+        
+        memories.sort(reverse=True, key=lambda x: x[0])
+        if len(self.ltm) > topN:
+            return memories[1:topN + 1]
+        return memories[1: len(self.ltm)]
+
+    def returnLTMRepositoryToString(self):
+        repo = self.returnLTMRepository()
+        return "\n".join(f"{i+1}. {item[1][1]}" for i, item in enumerate(repo))
     
-    def returnCurrentEmotionStatus(self, emotion):
-        messages = [{"role" : "system",
-            "content":"You are an intelligent assistant. Return 0, 1, or 2. Only return the numerical equivalent one of the 3 emotion classifiers: Neutral (1), Negative (0), Positive (2)",
-            }]
-        score, messages = gpt.queryGPT(
-            messages,
-            message=f"Classify the following memory into one of 3 different groups (Neutral (1), Negative (0), Positive (2)), rate the emotion:\n\n{emotion}"
-        )
-        return score
-
-    def returnLTMRepositoryToString(self, emotion):
-        repo = self.returnLTMRepository(emotion)
-        return f"\n".join(f"{i+1}. {item}" for i, item in enumerate(repo))
-    
-    def returnFullLTMRepositoryToString(self, emotion):
-        categories = ["Negative", "Neutral", "Positive"]
-        result = []
-
-        for idx, category in enumerate(categories):
-            items = self.ltm[idx]
-            if items:
-                result.append(f"{category}:")
-                result.extend(f"  {i+1}. {item}" for i, item in enumerate(items))
-            else:
-                result.append(f"{category}: (empty)")
-
-        score = self.returnCurrentEmotionStatus(emotion)
-        
-        return (score, "\n".join(result))
-
-    def printLTM(self):
-        print(f"Negative: {self.ltm[0]}")
-        print(f"Nuetral: {self.ltm[1]}")
-        print(f"Positive: {self.ltm[2]}")
+    def returnFullLTMRepositoryToString(self):
+        return "\n".join(f"{item['memory']}" for i, item in enumerate(self.ltm))

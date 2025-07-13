@@ -20,3 +20,11 @@ def queryGPT(messages, message="return failed"):
     local_messages.append({"role": "assistant", "content": reply})
 
     return reply, local_messages
+
+def getGPTEmbedding(text):
+    response = client.embeddings.create(
+                model="text-embedding-3-small",
+                input=text
+            )
+    embedding = response.data[0].embedding
+    return embedding

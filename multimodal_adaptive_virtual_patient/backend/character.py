@@ -64,7 +64,7 @@ class character:
             4. If appropriate for the patient’s communication style and situation, include
             rude or problematic expressions in the patient’s speech. Focus on portraying a
             realistic patient image for this research-based simulation.
-            5. Start the conversation with some small talk end then talk about any issues or
+            5. Start the conversation with some small talk and then talk about any issues or
             hardships you are going through to the therapist. 
             {self.system}
 
@@ -80,7 +80,7 @@ class character:
             {str(self.memory_room.summary)}
 
             Here are some memories that the patient can draw upon:
-            {self.memory_room.ltm.returnLTMRepositoryToString(self.memory_room.sem.emotion)}
+            {self.memory_room.ltm.returnLTMRepositoryToString()}
 
             Empathy Score History (Emotional Reactions, Interpretation, Explorations):\n{self.memory_room.sem.empathy}\n
             Latest Empathy Evaluation Result:\n{self.memory_room.sem.empathy[:-1]}

@@ -3,7 +3,8 @@ import { useState } from 'react';
 export default function CharacterMemory({ memoryInfo, SEM }) {
   const [openSections, setOpenSections] = useState({
     sessionSummary: true,
-    longTermMemory: false,
+    longTermMemory: true,
+    longTermMemoryfull: false,
     emotion: true,
     depression: true,
     empathyTracker: true,
@@ -48,9 +49,34 @@ export default function CharacterMemory({ memoryInfo, SEM }) {
           </div>
           {openSections.longTermMemory && (
             <>
-              <h3><strong>Current Repository:</strong> {memoryInfo.currentRepo ?? "(none)"} </h3>
-              <h3 className="font-bold">Full Repository</h3>
-              <p>{memoryInfo.fullRepo ?? "(none)"}</p>
+              <h3><strong>Current Repository:</strong> </h3>
+              {openSections.longTermMemory && (
+                <ul className="list-none pl-5">
+                  {(memoryInfo.currentRepo ?? "(none)")
+                    .split('\n')
+                    .map((line, index) => (
+                      <li key={index}>{line}</li>
+                    ))}
+                </ul>
+              )}
+              <div className="flex justify-between items-center my-5">
+                <h3 className="font-bold">Full Repository</h3>
+                <button
+                  className="text-sm "
+                  onClick={() => toggleSection('longTermMemoryfull')}
+                >
+                  {openSections.longTermMemoryfull ? '▲' : '▼'}
+                </button>
+              </div>
+              {openSections.longTermMemoryfull && (
+                <ul className="list-disc pl-5">
+                  {(memoryInfo.fullRepo ?? "(none)")
+                    .split('\n')
+                    .map((line, index) => (
+                      <li key={index}>{line}</li>
+                    ))}
+                </ul>
+              )}
             </>
           )}
         </div>
