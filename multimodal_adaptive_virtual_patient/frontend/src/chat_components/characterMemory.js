@@ -136,23 +136,23 @@ export default function CharacterMemory({ memoryInfo, SEM }) {
           {openSections.empathyTracker && (
             <div className="max-h-96 overflow-y-auto transparent-scrollbar flex flex-col gap-5">
               {SEM.empathy?.map((entry, index) => (
-              <div key={index}>
-                <h3>Turn {index + 1}:</h3>
-                <p><strong>Explanation:</strong> {entry.explanation}</p>
-                <p><strong>Emotional Reactions:</strong> {entry.emotional_reactions}</p>
-                <p><strong>Interpretations:</strong> {entry.interpretations}</p>
-                <p><strong>Explorations:</strong> {entry.explorations}</p>
-                {entry.behavioral_states && (
-                  <p><strong>Behavioral States:</strong> {entry.behavioral_states}</p>
-                )}
-              </div>
-            ))}
-            {SEM.rapportBlended?.map((entry, index) => (
-              <div key={index}>
-                <p><strong>Rapport Blended:</strong> {entry.blended}</p>
-                <p><strong>Empathy-Rapport Score:</strong> {entry.empathy}</p>
-              </div>
-            ))}
+                <div key={index}>
+                  <h3>Turn {index + 1}:</h3>
+                  <p><strong>Explanation:</strong> {entry.explanation}</p>
+                  <p><strong>Emotional Reactions:</strong> {entry.emotional_reactions}</p>
+                  <p><strong>Interpretations:</strong> {entry.interpretations}</p>
+                  <p><strong>Explorations:</strong> {entry.explorations}</p>
+                  {entry.behavioral_states && (
+                    <p><strong>Behavioral States:</strong> {entry.behavioral_states}</p>
+                  )}
+                  {SEM.rapportBlended?.[index] && (
+                    <>
+                      <p><strong>Rapport Blended:</strong> {SEM.rapportBlended[index].blended}</p>
+                      <p><strong>Empathy-Rapport Score:</strong> {SEM.rapportBlended[index].empathy}</p>
+                    </>
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </div>

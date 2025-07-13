@@ -26,10 +26,19 @@ class LTM:
         if(memory[0] < 5):
             return
         
-        embedding = gpt.getGPTEmbedding(memory[1])
+        messages = [{"role" : "system",
+            "content":"summarize the memory in one sentence by preserving the main ideas",
+            }]
+        summarized, messages = gpt.queryGPT(
+            messages,
+            message=f"Summarize the following memory in second person (you pronouns) keep main concepts:\n\n{memory[1]}"
+        )
+                
+        embedding = gpt.getGPTEmbedding(summarized)
         self.ltm.append({
-            "memory": memory,
-            "embedding": embedding
+            "importance": memory[0],
+            "memory": summarized,
+            "embedding": embedding,
         })
 
     def returnLTMRepository(self, topN=5):
@@ -48,7 +57,7 @@ class LTM:
 
     def returnLTMRepositoryToString(self):
         repo = self.returnLTMRepository()
-        return "\n".join(f"{i+1}. {item[1][1]}" for i, item in enumerate(repo))
+        return "\n".join(f"{i+1}. {item[1]}" for i, item in enumerate(repo))
     
     def returnFullLTMRepositoryToString(self):
         return "\n".join(f"{item['memory']}" for i, item in enumerate(self.ltm))
