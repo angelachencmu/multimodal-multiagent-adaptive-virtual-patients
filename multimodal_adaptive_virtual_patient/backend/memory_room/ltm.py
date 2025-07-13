@@ -9,10 +9,38 @@ def logLTM(msg):
 class LTM:
     def __init__(self):
         # ltm[0] = negative, ltm[1] = neutral, ltm[2] = positive
+        self.sessionltm = []
         self.ltm = []
-    
+
+    def returnSessionSummary(self, session):
+        sessionIndex = session - 2
+        if sessionIndex >= 0:
+            return "\n".join(f"{i+1}. {item}" for i, item in enumerate(self.sessionltm[sessionIndex]))
+        else:
+            return "N/A"
+
     # TODO: Create a progression mech that resorts ltm
-    def progressSession(self):
+    def progressSession(self, summaryHistory):
+        sessionDiscussion = []
+        for i in range(len(summaryHistory)):
+            messages = [{"role" : "system",
+            "content": f"You are provided checkpoint {i} for therapy session {len(self.sessionltm) + 1} of a patient. Reword the following checkpoint simular to 'At the first checkpoint of your first therapist session with your therapist you talked about ... and it effected you in ... leading to ...' ",
+            }]
+            summarized, messages = gpt.queryGPT(
+                messages,
+                message=f"Rewrite the following memory in second person (you pronouns) keep main concepts:\n\n{summaryHistory[i]}"
+            )
+            sessionDiscussion.append(summarized)
+
+            print(f"session discussion: {sessionDiscussion}")
+            embedding = gpt.getGPTEmbedding(sessionDiscussion)
+
+            self.ltm.append({
+                "importance": 8,
+                "memory": summarized,
+                "embedding": embedding,
+            })
+        self.sessionltm.append(sessionDiscussion)
         return
     
     def cosineSimilarity(self, vec1, vec2):
@@ -42,7 +70,10 @@ class LTM:
         })
 
     def returnLTMRepository(self, topN=5):
-        queryEmbedding = self.ltm[-1]['embedding']
+        if (len(self.ltm) > 0):
+            queryEmbedding = self.ltm[-1]['embedding']
+        else:
+            return []
 
         memories = []
         for item in self.ltm:

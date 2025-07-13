@@ -17,8 +17,9 @@ class MemoryRoom:
         self.config = newConfig
 
     def progressSession(self):
+        print(f"summary history og: {self.summary.summaryHistory}" )
+        self.ltm.progressSession(self.summary.summaryHistory)
         self.resetSession()
-        self.ltm.progressSession()
 
     def resetSession(self):
         self.summary = Summary()

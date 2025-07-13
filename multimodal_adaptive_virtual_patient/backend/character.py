@@ -43,11 +43,21 @@ class character:
             anxiety_instruction = ""
             disclosure_instruction = ""
 
+        session_instructions = ""
+        if self.sessionCount == 1:
+            session_instructions = "This is your first session with a new therapist. Introduce the conversation by introducing yourself and give a basic overview on topics which you want a new therapist to know about yourself"
+        else:
+            session_instructions = f"You have had {self.sessionCount} with this therapist. Introduce the conversation by refering to the fact you're familiar, such as 'it's good to talk to you again.' or 'it's been a while' etc. Please refer to and bring up conversation topics discussed in previous sessions with openers such as 'during last time's session...' or 'you mentioned last time I should try ... and it helped ...' "
+
+        print(self.memory_room.ltm.returnSessionSummary(self.sessionCount))
+
         base_rules = f"""
             You are participating in a therapist-patient communication training simulation. Your
             task is to act as a patient in a realistic and difficult communication scenario. This
             simulation aims to create challenging situations for training therapists in effective
             patient communication.
+
+            {session_instructions}
 
             First, carefully read and internalize the following patient profile:
 
@@ -75,6 +85,9 @@ class character:
 
             2. Think about how this patient would internally react and externally respond based
             on their profile and the current situation.
+
+            Here is important conversation topics from the previous session:
+            {self.memory_room.ltm.returnSessionSummary(self.sessionCount)}
 
             Here is a summarized current state of the patient:
             {str(self.memory_room.summary)}
@@ -125,9 +138,9 @@ class character:
         self.memory_room.progressSession()
     
     def resetCharacter(self):
-        if (self.sessionCount == 1):
-            self.memory_room = MemoryRoom()
-        else:
+        self.memory_room = MemoryRoom()
+        if (self.sessionCount != 1):
             self.memory_room.resetSession()
+            self.sessionCount = 1
 
         self.context = self.ogContext

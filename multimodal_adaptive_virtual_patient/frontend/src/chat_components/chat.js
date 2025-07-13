@@ -35,7 +35,20 @@ export default function Chat({selected, messages, setMessages, name, session}) {
 
             const data = await response.json();
             setCurrentSession(data.currentSession);
-            // TODO: Clear chat history after starting the next session
+            setCharacterMemory({
+                summary: "",
+                currentRepo: "",
+                fullRepo: "",
+            });
+            setSEM({
+                emotion: [],
+                depression: [],
+                empathy: [],
+                rapport: [],
+                rapportBlended: [],
+                behaviorState: []
+            });
+            setMessages([]);
         } catch (error) {
         console.error("Failed to fetch:", error);
         }
