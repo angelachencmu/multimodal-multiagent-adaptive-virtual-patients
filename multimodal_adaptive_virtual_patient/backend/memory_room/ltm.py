@@ -19,12 +19,11 @@ class LTM:
         else:
             return "N/A"
 
-    # TODO: Create a progression mech that resorts ltm
     def progressSession(self, summaryHistory):
         sessionDiscussion = []
         for i in range(len(summaryHistory)):
             messages = [{"role" : "system",
-            "content": f"You are provided checkpoint {i} for therapy session {len(self.sessionltm) + 1} of a patient. Reword the following checkpoint simular to 'At the first checkpoint of your first therapist session with your therapist you talked about ... and it effected you in ... leading to ...' ",
+            "content": f"You are provided checkpoint {i + 1} for therapy session {len(self.sessionltm) + 1} of a patient. Reword the following checkpoint simular to 'At checkpoint {i+1} of therapist session {len(self.sessionltm) + 1} with your therapist you talked about ... and it effected you in ... leading to ...' ",
             }]
             summarized, messages = gpt.queryGPT(
                 messages,

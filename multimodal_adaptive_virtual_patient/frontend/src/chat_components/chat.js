@@ -1,5 +1,6 @@
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
 import { UserCircleIcon } from '@heroicons/react/24/solid';
+import { BookmarkSquareIcon } from '@heroicons/react/24/solid';
 import { useState, useEffect } from "react";
 import CharacterMemory from './characterMemory';
 
@@ -7,6 +8,7 @@ export default function Chat({selected, messages, setMessages, name, session}) {
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const [currentSession, setCurrentSession] = useState(session)
+    const [loading, setLoading] = useState(`Current Session: ${currentSession + 1}`);
     const [characterMemory, setCharacterMemory] = useState({
         summary: "",
         currentRepo: "",
@@ -28,6 +30,7 @@ export default function Chat({selected, messages, setMessages, name, session}) {
 
     const progressSession = async () => {
         try {
+            setLoading("Next Session: Loading...")
             const response = await fetch(`${process.env.REACT_APP_API_URL}/progress-session`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -49,6 +52,7 @@ export default function Chat({selected, messages, setMessages, name, session}) {
                 behaviorState: []
             });
             setMessages([]);
+            setLoading(`Current Session: ${currentSession + 1}`);
         } catch (error) {
         console.error("Failed to fetch:", error);
         }
@@ -113,21 +117,55 @@ export default function Chat({selected, messages, setMessages, name, session}) {
         }
     };
 
+    const saveChatHistory = () => {
+        if (!messages || messages.length === 0) {
+            alert("No messages to save.");
+            return;
+        }
+
+        const formatted = messages.map(msg => {
+            if (msg.role === "user") return `therapist: ${msg.content}`;
+            else if (msg.role === "assistant") return `patient: ${msg.content}`;
+            else return `${msg.role}: ${msg.content}`;
+        }).join("\n");
+
+        // trigger download
+        const blob = new Blob([formatted], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${name}-chat-history-session${currentSession}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
+
     return (
         <div className="flex flex-col h-full w-full border p-4 rounded-xl shadow bg-white">
             <div className='flex flex-grow h-full'>
                 <div className='w-2/3 flex flex-col h-full'>
                     <div className='h-16 bg-teal p-5 flex gap-5 items-center rounded-t-lg justify-between items-center'>
-                        <h1 className='text-purple uppercase font-bold tracking-wide'>{name}</h1>
+                        <div className='flex gap-5'>
+                            <button
+                                disabled={!selected}
+                                onClick={saveChatHistory}
+                            >
+                                <BookmarkSquareIcon className="flex-shrink-0 h-5 w-5 text-purple" />
+                            </button>
+                            <h1 className='text-purple uppercase font-bold tracking-wide'>{name}</h1>
+                        </div>
                         <div className='flex items-center justify-center gap-2'>
                             <button
                             disabled={!selected}
                             onClick={progressSession}
-                            className="mt-2 px-4 py-1 rounded-full bg-teal tracking-wide border-2 border-solid duration-300 border-purple text-purple hover:tracking-wider hover:bg-white hover:text-teal"
-                        >Next Session: {currentSession + 1}</button>
+                            className="px-4 py-1 rounded-full bg-teal tracking-wide border-2 border-solid duration-300 border-purple text-purple hover:tracking-wider hover:bg-white hover:text-teal"
+                        >{loading}
+                        </button>
                             <button
                                 disabled={!selected}
-                                className="mt-2 px-4 py-1 duration-300"
+                                className="px-4 py-1 duration-300"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="#1f7a8c" className="size-6">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />

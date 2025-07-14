@@ -34,7 +34,13 @@ export default function CharacterMemory({ memoryInfo, SEM }) {
             </button>
           </div>
           {openSections.sessionSummary && (
-            <p>{memoryInfo.summary ?? "(none)"}</p>
+            <ul className="list-none max-h-96 overflow-y-auto transparent-scrollbar pr-3 mb-3">
+              {(memoryInfo.summary ?? "(none)")
+                .split('\n')
+                .map((line, index) => (
+                  <li key={index} className='mb-3'>{line}</li>
+                ))}
+            </ul>
           )}
         </div>
         <div className="flex-none flex flex-col border p-4 rounded-xl shadow bg-white w-full text-coral">
@@ -50,15 +56,17 @@ export default function CharacterMemory({ memoryInfo, SEM }) {
           {openSections.longTermMemory && (
             <>
               <h3><strong>Current Repository:</strong> </h3>
-              {openSections.longTermMemory && (
-                <ul className="list-none pl-5">
-                  {(memoryInfo.currentRepo ?? "(none)")
-                    .split('\n')
-                    .map((line, index) => (
-                      <li key={index}>{line}</li>
-                    ))}
-                </ul>
-              )}
+              <div className='max-h-96 overflow-y-auto transparent-scrollbar flex flex-col gap-5 pr-3 mt-3'>
+                {openSections.longTermMemory && (
+                  <ul className="list-none">
+                    {(memoryInfo.currentRepo ?? "(none)")
+                      .split('\n')
+                      .map((line, index) => (
+                        <li key={index}>{line}</li>
+                      ))}
+                  </ul>
+                )}
+              </div>
               <div className="flex justify-between items-center my-5">
                 <h3 className="font-bold">Full Repository</h3>
                 <button
@@ -69,7 +77,7 @@ export default function CharacterMemory({ memoryInfo, SEM }) {
                 </button>
               </div>
               {openSections.longTermMemoryfull && (
-                <ul className="list-disc pl-5">
+                <ul className="list-disc pl-5 max-h-96 overflow-y-auto transparent-scrollbar pr-3 mb-3">
                   {(memoryInfo.fullRepo ?? "(none)")
                     .split('\n')
                     .map((line, index) => (

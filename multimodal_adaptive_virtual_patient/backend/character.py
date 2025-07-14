@@ -2,7 +2,7 @@ from memory_room.memory_room import MemoryRoom
 from memory_room.SEM.constants import SELF_DISCLOSURE_INSTRUCTIONS, ANXIETY_INSTRUCTIONS, DEPRESSION_INSTRUCTIONS
 
 class character:
-    def __init__(self, name, identity, keyBackground, personality, system, context):
+    def __init__(self, name, identity, keyBackground, personality, system, context, sessions):
         # static
         self.name = name
         self.identity = identity
@@ -10,6 +10,7 @@ class character:
         self.personality = personality
         self.system = system
         self.sessionCount = 1
+        self.sessions = sessions
 
         # dynamic
         self.memory_room = MemoryRoom()
@@ -45,11 +46,17 @@ class character:
 
         session_instructions = ""
         if self.sessionCount == 1:
-            session_instructions = "This is your first session with a new therapist. Introduce the conversation by introducing yourself and give a basic overview on topics which you want a new therapist to know about yourself"
+            session_instructions = "This is your first session with a new therapist. Introduce the conversation by introducing yourself and give a basic overview on topics which you want a new therapist to know about yourself. Don't ask too often 'how is your job going' etc. Make sure to emphasize this is your first session, you have not interacte with this therapist before."
         else:
             session_instructions = f"You have had {self.sessionCount} with this therapist. Introduce the conversation by refering to the fact you're familiar, such as 'it's good to talk to you again.' or 'it's been a while' etc. Please refer to and bring up conversation topics discussed in previous sessions with openers such as 'during last time's session...' or 'you mentioned last time I should try ... and it helped ...' "
 
         print(self.memory_room.ltm.returnSessionSummary(self.sessionCount))
+
+        systemAddition = ""
+        if self.sessionCount <= len(self.sessions):
+            systemAddition = self.sessions[self.sessionCount - 1]
+        else:
+            systemAddition = ""
 
         base_rules = f"""
             You are participating in a therapist-patient communication training simulation. Your
@@ -77,6 +84,7 @@ class character:
             5. Start the conversation with some small talk and then talk about any issues or
             hardships you are going through to the therapist. 
             {self.system}
+            {systemAddition}
 
             To generate your response, follow these steps:
 
@@ -117,6 +125,8 @@ class character:
             Make up life experiences and background not specified in the instructions if applicable to the conversation. 
             "
         """
+
+        print(systemAddition)
 
         return base_rules
     
