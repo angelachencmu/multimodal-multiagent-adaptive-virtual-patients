@@ -17,10 +17,6 @@ class character:
         for memory in keyBackground:
             self.memory_room.processMemory(memory, "InitiateMem801")
 
-        # updated between each session 
-        self.ogContext = context
-        self.context = context
-
     def getSystemPrompt(self):
         # 4. Get instruction strings
         if self.memory_room.sem.behaviorState:
@@ -49,8 +45,6 @@ class character:
             session_instructions = "This is your first session with a new therapist. Introduce the conversation by introducing yourself and give a basic overview on topics which you want a new therapist to know about yourself. Don't ask too often 'how is your job going' etc. Make sure to emphasize this is your first session, you have not interacte with this therapist before."
         else:
             session_instructions = f"You have had {self.sessionCount} with this therapist. Introduce the conversation by refering to the fact you're familiar, such as 'it's good to talk to you again.' or 'it's been a while' etc. Please refer to and bring up conversation topics discussed in previous sessions with openers such as 'during last time's session...' or 'you mentioned last time I should try ... and it helped ...' "
-
-        print(self.memory_room.ltm.returnSessionSummary(self.sessionCount))
 
         systemAddition = ""
         if self.sessionCount <= len(self.sessions):
@@ -140,17 +134,19 @@ class character:
             Identiy: {identityStr} \n 
             Key Background: {keyBackgroundStr} \n 
             Personality: {self.personality} \n
-            Context: {self.context}
         """
     
     def progressSession(self):
         self.sessionCount += 1
         self.memory_room.progressSession()
-    
+
+    def resetSession(self):
+        self.memory_room.resetSession()
+
     def resetCharacter(self):
         self.memory_room = MemoryRoom()
-        if (self.sessionCount != 1):
-            self.memory_room.resetSession()
-            self.sessionCount = 1
+        for memory in self.keyBackground:
+            self.memory_room.processMemory(memory, "InitiateMem801")
 
-        self.context = self.ogContext
+        self.memory_room.resetSession()
+        self.sessionCount = 1

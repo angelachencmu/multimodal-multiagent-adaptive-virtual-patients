@@ -11,9 +11,35 @@ export default function App() {
     identity: [],
     keyBackground: [],
     personality: "",
-    context: "",
     session: 0,
   });
+
+  const updateSession = (newSession) => {
+    setCharacterCard(prev => ({
+      ...prev,
+      session: newSession,
+    }));
+  };
+
+  const resetCharacter = async() => {
+    try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/reset-character`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: "true" }),
+        });
+
+        const data = await response.json();
+        setCharacterCard(data.characterCard);
+        console.log(data.characterCard);
+
+        // Clear chat and name on character switch
+        setMessages([]);
+    } catch (error) {
+        console.error("Failed to fetch:", error);
+    }
+  }
+
 
   // Change character and clear chat
   const handleChangeCharacter = async (characterName) => {
@@ -26,6 +52,7 @@ export default function App() {
 
       const data = await response.json();
       setCharacterCard(data.characterCard);
+      console.log(data.characterCard);
 
       // Clear chat and name on character switch
       setMessages([]);
@@ -46,12 +73,14 @@ export default function App() {
       </div>
       <div className="h-[95vh] w-3/4">
         <Chat
-          selected = {selected}
-          messages={messages}
-          setMessages={setMessages}
-          name={characterCard.name}
-          session={characterCard.session}
-        />
+        selected={selected}
+        messages={messages}
+        setMessages={setMessages}
+        name={characterCard.name}
+        session={characterCard.session}
+        updateSession={updateSession}
+        resetCharacter={resetCharacter}
+      />
       </div>
     </div>
   );

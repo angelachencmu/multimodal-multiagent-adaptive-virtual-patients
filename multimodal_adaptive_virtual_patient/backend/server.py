@@ -218,6 +218,8 @@ def progress_session():
     char.progressSession()
     globalCurrentUser = char
 
+    print(f"{globalCurrentUser.name} - session count: {globalCurrentUser.sessionCount}")
+
     global messages 
     messages = []
 
@@ -252,12 +254,27 @@ def get_sem_info():
             "behaviorState": globalCurrentUser.memory_room.sem.behaviorState}
         })
 
+@app.route("/reset-character", methods=["POST"])
+def resetCharacter():
+    global globalCurrentUser
+    globalCurrentUser.resetCharacter()
+
+    global messages 
+    messages = []
+    
+    return jsonify({"characterCard": 
+                    {"name": globalCurrentUser.name, 
+                     "identity": globalCurrentUser.identity, 
+                     "keyBackground": globalCurrentUser.keyBackground,
+                     "personality": globalCurrentUser.personality,
+                     "session": globalCurrentUser.sessionCount}})
+
 
 @app.route("/change-character", methods=["POST"])
 def changeCharacter():
     global globalCurrentUser
     characterRequest = request.json.get("character", "")
-    globalCurrentUser.resetCharacter()
+    # globalCurrentUser.resetCharacter()
     if characterRequest == "Alex":
         globalCurrentUser = alex
     if characterRequest == "Steph":
@@ -266,20 +283,19 @@ def changeCharacter():
         globalCurrentUser = sam
     if characterRequest == "Theo":
         globalCurrentUser = theo
-
-    print(globalCurrentUser.memory_room.ltm.returnFullLTMRepositoryToString())
+    
+    globalCurrentUser.resetSession()
 
     global messages 
     messages = []
 
-    print(globalCurrentUser.sessionCount)
+    print(f"{globalCurrentUser.name} - session count: {globalCurrentUser.sessionCount}")
 
     return jsonify({"characterCard": 
                     {"name": globalCurrentUser.name, 
                      "identity": globalCurrentUser.identity, 
                      "keyBackground": globalCurrentUser.keyBackground,
                      "personality": globalCurrentUser.personality,
-                     "context": globalCurrentUser.context,
                      "session": globalCurrentUser.sessionCount}})
 
 @app.route("/chat", methods=["POST"])
