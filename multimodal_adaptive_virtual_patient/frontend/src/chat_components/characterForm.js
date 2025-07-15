@@ -76,7 +76,6 @@ export default function SEMSettingsForm() {
             .then((res) => res.json())
             .then((data) => {
                 setFormUpdated(data.time);
-                console.log(formUpdate);
         });
     };
 

@@ -5,7 +5,7 @@ import { BookmarkSquareIcon } from '@heroicons/react/24/solid';
 import { useState, useEffect } from "react";
 import CharacterMemory from './characterMemory';
 
-export default function Chat({ selected, messages, setMessages, name, session, updateSession, resetCharacter, isLoading, setIsLoading }) {
+export default function Chat({ selected, setSelected, messages, setMessages, name, session, updateSession, resetCharacter, isLoading, setIsLoading }) {
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const [characterMemory, setCharacterMemory] = useState({
@@ -22,21 +22,50 @@ export default function Chat({ selected, messages, setMessages, name, session, u
         behaviorState: []
     });
 
+    const [messageDisplay, setMessageDisplay] = useState([]);
+    const [characterMemoryDisplay, setCharacterMemoryDisplay] = useState(characterMemory);
+    const [SEMDisplay, setSEMDisplay] = useState(SEM);
+
+    const [selectedSession, setSelectedSession] = useState(session);
+
+    const handleSessionChange = (selectedSession) => {
+        setSelectedSession(selectedSession);
+        const snapshot = loadSnapshotForSession(name, selectedSession);
+        if (selectedSession !== session) {
+            setSelected(false);
+            setCharacterMemoryDisplay(snapshot.characterMemory);
+            setSEMDisplay(snapshot.SEM);
+            setMessageDisplay(snapshot.messages || {});
+        } else {
+            setSelected(true);
+            setCharacterMemoryDisplay(characterMemory);
+            setSEMDisplay(SEM);
+        }
+    };
+
+
+    const loadSnapshotForSession = (characterName, sessionIndex) => {
+        const allSnapshots = JSON.parse(localStorage.getItem('chatSnapshots') || '[]');
+        return allSnapshots[characterName][sessionIndex - 1];
+    };
+
+
+
     useEffect(() => {
-        console.log(session);
+        setSelectedSession(session);
     }, [session]);
 
     const progressSession = async () => {
         try {
+            setIsLoading(true);
+            setSelected(false);
             const response = await fetch(`${process.env.REACT_APP_API_URL}/progress-session`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
             });
-            setIsLoading(true);
 
             const data = await response.json();
-            updateSession(data.characterCard);
-            console.log(`session count: ${data.characterCard.sessionCount}`);
+            updateSession(data.characterCard, messages, SEM, characterMemory);
             setCharacterMemory({
                 summary: "",
                 currentRepo: "",
@@ -50,8 +79,22 @@ export default function Chat({ selected, messages, setMessages, name, session, u
                 rapportBlended: [],
                 behaviorState: []
             });
+            setCharacterMemoryDisplay({
+                summary: "",
+                currentRepo: "",
+                fullRepo: "",
+            });
+            setSEMDisplay({
+                emotion: [],
+                depression: [],
+                empathy: [],
+                rapport: [],
+                rapportBlended: [],
+                behaviorState: []
+            });
             setMessages([]);
             setIsLoading(false);
+            setSelected(true);
         } catch (error) {
         console.error("Failed to fetch:", error);
         }
@@ -66,8 +109,8 @@ export default function Chat({ selected, messages, setMessages, name, session, u
             });
 
             const data = await response.json();
-            console.log(data.SEM)
             setSEM(data.SEM);
+            setSEMDisplay(data.SEM);
         } catch (error) {
             console.error("Failed to fetch:", error);
         }
@@ -83,7 +126,7 @@ export default function Chat({ selected, messages, setMessages, name, session, u
 
             const data = await response.json();
             setCharacterMemory(data.characterMemory);
-            console.log(characterMemory)
+            setCharacterMemoryDisplay(data.characterMemory);
         } catch (error) {
             console.error("Failed to fetch:", error);
         }
@@ -122,7 +165,14 @@ export default function Chat({ selected, messages, setMessages, name, session, u
             return;
         }
 
-        const formatted = messages.map(msg => {
+        let saveMessage = [];
+        if (selectedSession !== session) {
+            saveMessage = messageDisplay;
+        } else {
+            saveMessage = messages;
+        }
+
+        const formatted = saveMessage.map(msg => {
             if (msg.role === "user") return `therapist: ${msg.content}`;
             else if (msg.role === "assistant") return `patient: ${msg.content}`;
             else return `${msg.role}: ${msg.content}`;
@@ -133,7 +183,7 @@ export default function Chat({ selected, messages, setMessages, name, session, u
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `${name}-chat-history-session${session}.txt`;
+        link.download = `${name}-chat-history-session${selectedSession}.txt`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -148,7 +198,6 @@ export default function Chat({ selected, messages, setMessages, name, session, u
                     <div className='h-16 bg-teal p-5 flex gap-5 items-center rounded-t-lg justify-between items-center'>
                         <div className='flex gap-5'>
                             <button
-                                disabled={!selected}
                                 onClick={saveChatHistory}
                             >
                                 <BookmarkSquareIcon className="flex-shrink-0 h-5 w-5 text-purple" />
@@ -156,7 +205,17 @@ export default function Chat({ selected, messages, setMessages, name, session, u
                             <h1 className='text-purple uppercase font-bold tracking-wide'>{name}</h1>
                         </div>
                         <div className='flex items-center justify-center gap-2 text-purple'>
-                            Current Session:  {session}
+                            <select
+                                value={selectedSession}
+                                onChange={(e) => handleSessionChange(Number(e.target.value))}
+                                className="border rounded px-2 py-1 text-purple bg-white"
+                                >
+                                {Array.from({ length: session }, (_, i) => (
+                                    <option key={i + 1} value={i + 1}>
+                                    Session {i + 1}
+                                    </option>
+                                ))}
+                            </select>
                             <button
                             disabled={!selected}
                             onClick={progressSession}
@@ -180,7 +239,32 @@ export default function Chat({ selected, messages, setMessages, name, session, u
                             processing request...
                         </div>
                     )}
-                    {!isLoading && (
+                   {selectedSession !== session ? (
+                    <div className="flex-1 overflow-y-auto bg-white p-5 transparent-scrollbar">
+                        {messageDisplay.map((msg, index) => (
+                            <div
+                            key={index}
+                            className={`flex mb-4 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                            >
+                            {msg.role === "user" ? (
+                                <>
+                                <div className="mr-2 py-3 px-4 bg-coral rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white max-w-[70%]">
+                                    {msg.content}
+                                </div>
+                                <UserCircleIcon className="flex-shrink-0 h-10 w-10 text-coral" />
+                                </>
+                            ) : (
+                                <>
+                                <UserCircleIcon className="flex-shrink-0 h-10 w-10 text-blue" />
+                                <div className="ml-2 py-3 px-4 bg-blue rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-purple max-w-[70%]">
+                                    {msg.content}
+                                </div>
+                                </>
+                            )}
+                            </div>
+                        ))}
+                    </div>
+                    ) : (   !isLoading && (
                     <div className="flex-1 overflow-y-auto bg-white p-5 transparent-scrollbar">
                         {messages.map((msg, index) => (
                             <div
@@ -205,7 +289,7 @@ export default function Chat({ selected, messages, setMessages, name, session, u
                             </div>
                         ))}
                     </div>
-                    )}
+                    ))}
                     {isTyping && (
                     <div className="italic text-gray-500 ml-2 p-2">{name} is typing...</div>
                     )}
@@ -229,7 +313,7 @@ export default function Chat({ selected, messages, setMessages, name, session, u
                     </div>
                 </div>
                 <div className='w-1/3'>
-                    <CharacterMemory memoryInfo={characterMemory} SEM = {SEM} />
+                    <CharacterMemory memoryInfo={characterMemoryDisplay} SEM = {SEMDisplay} />
                 </div>
             </div>
         </div>

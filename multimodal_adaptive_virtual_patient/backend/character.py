@@ -178,8 +178,6 @@ class character:
 
     def resetSession(self):
         self.memory_room.resetSession()
-        if self.sessionCount > 1:
-            self.sessions = self.sessions[:-1]
 
     def resetCharacter(self):
         self.memory_room = MemoryRoom()

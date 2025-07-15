@@ -151,8 +151,6 @@ globalCurrentUser = sam
 
 CURRENT_CONFIG = DEFAULT_CONFIG.copy()
 
-print(globalCurrentUser.sessions)
-
 @app.route("/new-weights", methods=["POST"])
 def set_new_weights():
     data = request.get_json()
@@ -198,6 +196,8 @@ def progress_session():
     global messages 
     messages = []
 
+    print(f"sessions after progression: {globalCurrentUser.sessions}")
+
     return jsonify({"characterCard": 
                     {"name": globalCurrentUser.name, 
                      "identity": globalCurrentUser.identity, 
@@ -236,6 +236,19 @@ def get_sem_info():
             "behaviorState": globalCurrentUser.memory_room.sem.behaviorState}
         })
 
+@app.route("/restart-webpage", methods=["POST"])
+def restartWebpage():
+    print("restart called")
+    alex.resetCharacter()
+    sam.resetCharacter()
+    theo.resetCharacter()
+    steph.resetCharacter()
+    global messages 
+    messages = []
+    return jsonify({
+            "message": "restarted",
+        })
+
 @app.route("/reset-character", methods=["POST"])
 def resetCharacter():
     global globalCurrentUser
@@ -269,7 +282,6 @@ def changeCharacter():
         globalCurrentUser = theo
     
     globalCurrentUser.resetSession()
-    print(globalCurrentUser.sessions)
 
     global messages 
     messages = []
