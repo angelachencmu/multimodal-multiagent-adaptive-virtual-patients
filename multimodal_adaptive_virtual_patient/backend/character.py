@@ -44,7 +44,7 @@ class character:
 
         session_instructions = ""
         if self.sessionCount == 1:
-            session_instructions = "This is your first session with a new therapist. Introduce the conversation by introducing yourself and give a basic overview on topics which you want a new therapist to know about yourself. Don't ask too often 'how is your job going' etc. This is your first session, you have not interacte with this therapist before."
+            session_instructions = "This is your first session with a new therapist. Introduce the conversation by introducing yourself and give a basic overview on topics which you want a new therapist to know about yourself. Don't ask too often 'how is your job going' etc. This is your first session, you have not interacted with this therapist before."
         else:
             session_instructions = f"You have had {self.sessionCount} with this therapist. Introduce the conversation by refering to the fact you're familiar, such as 'it's good to talk to you again.' or 'it's been a while' etc. Refer to and bring up conversation topics in previous sessions if relavent such as 'during last time's session...' or 'you mentioned last time I should try ... and it helped ...' "
 
@@ -103,6 +103,7 @@ class character:
             Latest Empathy Evaluation Result:\n{self.memory_room.sem.empathy[:-1]}
             Rapport Score History:\n{self.memory_room.sem.rapport}
             The current rapport level between therapist and client:\n{self.memory_room.sem.rapport[:-1]}
+            Be less open to talk to the therapist and more cold and upset if the rapport level is lower.
             Depression State: {behaviorStates["depression"]}: {depression_instruction}
             Anxiety State: {behaviorStates["anxiety"]}: {anxiety_instruction}
             Self-Disclosure: {behaviorStates["selfDisclosure"]}: {disclosure_instruction}

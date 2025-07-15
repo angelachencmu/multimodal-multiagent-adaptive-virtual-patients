@@ -87,7 +87,7 @@ class MemoryRoom:
                 "You are an intelligent assistant that evaluates the psychological impact of experiences. "
                 "Return ONLY a numerical value from 1 to 10 based on how much the memory is likely to affect "
                 "a person's personality, emotions, and long-term behaviors. "
-                "Score 1 if the memory is mundane or has no lasting effect (e.g., brushing teeth, small talk, talking about the weather), "
+                "Score 1 if the memory is mundane or has no lasting effect (e.g., brushing teeth, small talk, talking about the weather, small talk, basic conversation starters), "
                 "and 10 if the memory is deeply meaningful and transformative (e.g., falling in love, getting married, developing depression)."
                 "Return ONLY a number. Do not include any explanation or words."
             )}]
