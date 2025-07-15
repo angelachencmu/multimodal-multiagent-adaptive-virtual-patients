@@ -28,11 +28,11 @@ export default function Chat({ selected, messages, setMessages, name, session, u
 
     const progressSession = async () => {
         try {
-            setIsLoading(true);
             const response = await fetch(`${process.env.REACT_APP_API_URL}/progress-session`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
             });
+            setIsLoading(true);
 
             const data = await response.json();
             updateSession(data.characterCard);

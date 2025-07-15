@@ -187,5 +187,6 @@ class character:
             self.memory_room.processMemory(memory, "InitiateMem801")
 
         self.memory_room.resetSession()
+        if self.sessionCount > 1:
+            self.sessions = self.sessions[:1]
         self.sessionCount = 1
-        self.sessions = self.sessions[:1]

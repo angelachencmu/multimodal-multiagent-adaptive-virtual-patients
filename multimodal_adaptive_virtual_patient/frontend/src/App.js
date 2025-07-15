@@ -23,13 +23,13 @@ export default function App() {
 
   const resetCharacter = async() => {
     try {
-        setIsLoading(true);
-        setSelected(false);
         const response = await fetch(`${process.env.REACT_APP_API_URL}/reset-character`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: "true" }),
         });
+        setIsLoading(true);
+        setSelected(false);
 
         const data = await response.json();
         setCharacterCard(data.characterCard);
