@@ -50,7 +50,14 @@ export default function CharacterProfile({ changeCharacter, characterCard }) {
             ))}
             </ul>
             <h2><strong>Personality: </strong>{characterCard.personality}</h2>
-            <h2><strong>Context: </strong>{characterCard.context}</h2>
+            <h2><strong>Context: </strong></h2>
+            <ul className="list-none">
+                {(characterCard.context ?? "(none)")
+                    .split('\n')
+                    .map((line, index) => (
+                    <li key={index}>{line}</li>
+                ))}
+            </ul>
         </div>
         <div className="flex-none flex flex-col border p-4 rounded-xl shadow bg-white w-full">
             <SEMSettingsForm/>

@@ -1,5 +1,6 @@
 from memory_room.memory_room import MemoryRoom
 from memory_room.SEM.constants import SELF_DISCLOSURE_INSTRUCTIONS, ANXIETY_INSTRUCTIONS, DEPRESSION_INSTRUCTIONS
+import gpt 
 
 class character:
     def __init__(self, name, identity, keyBackground, personality, system, context, sessions):
@@ -11,6 +12,7 @@ class character:
         self.system = system
         self.sessionCount = 1
         self.sessions = sessions
+        self.context = context
 
         # dynamic
         self.memory_room = MemoryRoom()
@@ -42,15 +44,12 @@ class character:
 
         session_instructions = ""
         if self.sessionCount == 1:
-            session_instructions = "This is your first session with a new therapist. Introduce the conversation by introducing yourself and give a basic overview on topics which you want a new therapist to know about yourself. Don't ask too often 'how is your job going' etc. Make sure to emphasize this is your first session, you have not interacte with this therapist before."
+            session_instructions = "This is your first session with a new therapist. Introduce the conversation by introducing yourself and give a basic overview on topics which you want a new therapist to know about yourself. Don't ask too often 'how is your job going' etc. This is your first session, you have not interacte with this therapist before."
         else:
-            session_instructions = f"You have had {self.sessionCount} with this therapist. Introduce the conversation by refering to the fact you're familiar, such as 'it's good to talk to you again.' or 'it's been a while' etc. Please refer to and bring up conversation topics discussed in previous sessions with openers such as 'during last time's session...' or 'you mentioned last time I should try ... and it helped ...' "
+            session_instructions = f"You have had {self.sessionCount} with this therapist. Introduce the conversation by refering to the fact you're familiar, such as 'it's good to talk to you again.' or 'it's been a while' etc. Refer to and bring up conversation topics in previous sessions if relavent such as 'during last time's session...' or 'you mentioned last time I should try ... and it helped ...' "
 
-        systemAddition = ""
-        if self.sessionCount <= len(self.sessions):
-            systemAddition = self.sessions[self.sessionCount - 1]
-        else:
-            systemAddition = ""
+        print(self.sessions)
+        print(f"New Experiences: {self.sessions[self.sessionCount - 1]}")
 
         base_rules = f"""
             You are participating in a therapist-patient communication training simulation. Your
@@ -78,7 +77,10 @@ class character:
             5. Start the conversation with some small talk and then talk about any issues or
             hardships you are going through to the therapist. 
             {self.system}
-            {systemAddition}
+            {self.sessions[self.sessionCount - 1]}
+
+            Specific Context:
+            {self.context}
 
             To generate your response, follow these steps:
 
@@ -120,8 +122,6 @@ class character:
             "
         """
 
-        print(systemAddition)
-
         return base_rules
     
     def getCharacterCard(self):
@@ -137,11 +137,49 @@ class character:
         """
     
     def progressSession(self):
+        self.generateIntersessionEvent()
         self.sessionCount += 1
         self.memory_room.progressSession()
 
+    def generateIntersessionEvent(self):
+        characterCard = self.getCharacterCard()
+        sessionHistory = self.memory_room.summary.__str__()
+        ltm = self.memory_room.ltm.returnFullLTMRepositoryToString()
+
+        messages = [{"role" : "system",
+            "content": f"""Generate five realistic inter-session life events along with key phrases to say relavant to the key history for a virtual therapy patient in second persion. \n
+                            Example Response: \n 
+                            'Don't say this immediately: You broke up with your girlfriend this week \n
+                            You finally joined the club that you were talking about last week \n
+                            Don't say this immediately: You had a huge argument with your parents and now you haven't talked in a few days \n
+                            One of your first messages should be: You started working on the new techniques we talked about last week but they haven't worked well. During one of them you had a panic attack. \n
+                            You started exersising again and it has helped take your mind of things'
+                            """,
+            }]
+        newEvents, messages = gpt.queryGPT(
+            messages,
+            message=f"""
+                Character Persona:
+                {characterCard}
+
+                Long-Term Memories:
+                {ltm}
+
+                Last Session Summary:
+                {sessionHistory}
+
+                Generate 5 realistic life event that occurred between sessions. 
+                It should be emotionally meaningful, character-consistent, but somewhat unpredictable.
+                Respond with only 1-2 sentences per life event.
+                """
+        )
+        self.sessions.append(newEvents)
+
+
     def resetSession(self):
         self.memory_room.resetSession()
+        if self.sessionCount > 1:
+            self.sessions = self.sessions[:-1]
 
     def resetCharacter(self):
         self.memory_room = MemoryRoom()
@@ -150,3 +188,4 @@ class character:
 
         self.memory_room.resetSession()
         self.sessionCount = 1
+        self.sessions = self.sessions[:1]

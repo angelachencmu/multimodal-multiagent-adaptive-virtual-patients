@@ -12,17 +12,19 @@ export default function App() {
     keyBackground: [],
     personality: "",
     session: 0,
+    context: ""
   });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const updateSession = (newSession) => {
-    setCharacterCard(prev => ({
-      ...prev,
-      session: newSession,
-    }));
+  const updateSession = (characterCard) => {
+    setCharacterCard(characterCard);
+    console.log(characterCard.context);
   };
 
   const resetCharacter = async() => {
     try {
+        setIsLoading(true);
+        setSelected(false);
         const response = await fetch(`${process.env.REACT_APP_API_URL}/reset-character`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -35,6 +37,8 @@ export default function App() {
 
         // Clear chat and name on character switch
         setMessages([]);
+        setIsLoading(false);
+        setSelected(true);
     } catch (error) {
         console.error("Failed to fetch:", error);
     }
@@ -80,6 +84,8 @@ export default function App() {
         session={characterCard.session}
         updateSession={updateSession}
         resetCharacter={resetCharacter}
+        isLoading={isLoading}
+        setIsLoading={setIsLoading}
       />
       </div>
     </div>

@@ -36,13 +36,7 @@ def getAlex():
             Don't say this unprompted, but you should eventually say: "My daily routine is all out of whack. I can't sleep, I can't eat, my mind keeps going to dark places. Sometimes I wish I wasn't alive anymore."
             Don't say this immediately: You haven't thought about how you would actually kill yourself
             At some point, you should say "It sounds weird, but I feel like I still see him"
-        """,
-            """
-            Don’t say this immediately: You keep replaying all these moments. Things you wish I’d said.
-            One of your first responses should be: “I thought talking about it might help, but I just feel even more raw now.”
-            Don’t say this immediately:  You can’t make myself do anything. You just stay in bed half the time.”
-            Don’t say this immediately: After therapy last time you keep picturing him in the hospital
-            """
+        """
         ]
     }
 
@@ -66,13 +60,7 @@ def getSteph():
             You really don't want to talk to a hotline. You're worried they would just put you in the hospital and change your drugs
             You’ve tried talking to a therapist, but you can't leave the house and it makes you depressed to call on your computer     
             You don't even know what you would say, it's not like they can help with the pain anyways
-        """,
         """
-            Don’t say this immediately: You keep thinking people would be better off without you.
-            One of your first responses should be: "I don’t really want to talk about it, but I guess I should."
-            Don’t say this immediately:  You hate feeling like a burden and sometimes avoid talking so you don’t 'ruin' anyone’s day.
-            Don’t say this immediately: Sometimes you plan out what you’d do if it got really bad, even though you don’t want to admit it.
-            """
         ]
     }
 
@@ -104,15 +92,7 @@ def getSam():
             Don’t say this immediately: You were at a barbecue and everyone was having a good time, but you just found yourself
             looking at the fire and thinking about ways that you could die or, it feels hard to say, like kill yourself.
             Sometimes you get in this dark space. Like it’s hard to go on
-        """,
-            """
-            Don’t say this immediately: You feel like you’re failing in every part of your life.
-            One of your first responses should be: "I don’t know, I guess it’s just been a bad week."
-            Work: Parent complained about your teaching style; you’re questioning if you even belong in this career.
-            Don’t say this immediately: After therapy last time your girlfriend asked if you were okay and you snapped at her.
-            Don’t say this immediately: You’ve been drinking more than usual to calm down.
-            Don’t say this immediately: You sometimes think about how it might be easier if you weren’t here anymore.
-            """
+        """
         ]
     }
 
@@ -142,14 +122,7 @@ def getTheo():
             have some friends who go. I’m just not sure"
             You haven’t talked to anyone at school about it. You feel kind of scared to bring it up for some reason. It’s easier to
             talk about it online with me
-        """,
-            """
-            You’re meeting again after the first session. You seem a little tired today. You say you didn’t really sleep last night because your mind wouldn’t stop racing. 
-            After therapy last time you went to that gay club that you mentioned last time and you enjoyed a lot more. It was okay, but you felt weird and quiet. You kind of just sat there while other people talked. 
-            You and your girlfriend got in a fight. She thinks you don’t really open up to her. You felt really bad about that. You don’t know how to explain that you do trust her but it’s just hard to talk.
-            You still haven’t said anything about how you feel to your parents or teachers. You don’t want them to worry, or think you’re “messed up” or need to go on meds or something.
-            You mention sometimes you think about just disappearing, but you also feel stupid saying that out loud. You want help but you’re not sure what you want the therapist to actually do.
-            """
+        """
         ]
     }
 
@@ -177,6 +150,8 @@ messages = []
 globalCurrentUser = sam
 
 CURRENT_CONFIG = DEFAULT_CONFIG.copy()
+
+print(globalCurrentUser.sessions)
 
 @app.route("/new-weights", methods=["POST"])
 def set_new_weights():
@@ -223,7 +198,14 @@ def progress_session():
     global messages 
     messages = []
 
-    return jsonify({"currentSession": globalCurrentUser.sessionCount})
+    return jsonify({"characterCard": 
+                    {"name": globalCurrentUser.name, 
+                     "identity": globalCurrentUser.identity, 
+                     "keyBackground": globalCurrentUser.keyBackground,
+                     "personality": globalCurrentUser.personality,
+                     "session": globalCurrentUser.sessionCount,
+                     "context": globalCurrentUser.sessions[globalCurrentUser.sessionCount - 1]}
+                     })
 
 @app.route("/get-character-memory", methods=["POST"])
 def get_character_memory():
@@ -267,7 +249,9 @@ def resetCharacter():
                      "identity": globalCurrentUser.identity, 
                      "keyBackground": globalCurrentUser.keyBackground,
                      "personality": globalCurrentUser.personality,
-                     "session": globalCurrentUser.sessionCount}})
+                     "session": globalCurrentUser.sessionCount,
+                     "context": globalCurrentUser.sessions[globalCurrentUser.sessionCount - 1]}
+                     })
 
 
 @app.route("/change-character", methods=["POST"])
@@ -285,6 +269,7 @@ def changeCharacter():
         globalCurrentUser = theo
     
     globalCurrentUser.resetSession()
+    print(globalCurrentUser.sessions)
 
     global messages 
     messages = []
@@ -296,7 +281,8 @@ def changeCharacter():
                      "identity": globalCurrentUser.identity, 
                      "keyBackground": globalCurrentUser.keyBackground,
                      "personality": globalCurrentUser.personality,
-                     "session": globalCurrentUser.sessionCount}})
+                     "session": globalCurrentUser.sessionCount,
+                     "context": globalCurrentUser.sessions[globalCurrentUser.sessionCount - 1]}})
 
 @app.route("/chat", methods=["POST"])
 def chat():

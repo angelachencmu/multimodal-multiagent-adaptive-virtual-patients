@@ -5,7 +5,7 @@ import { BookmarkSquareIcon } from '@heroicons/react/24/solid';
 import { useState, useEffect } from "react";
 import CharacterMemory from './characterMemory';
 
-export default function Chat({ selected, messages, setMessages, name, session, updateSession, resetCharacter }) {
+export default function Chat({ selected, messages, setMessages, name, session, updateSession, resetCharacter, isLoading, setIsLoading }) {
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const [characterMemory, setCharacterMemory] = useState({
@@ -28,14 +28,15 @@ export default function Chat({ selected, messages, setMessages, name, session, u
 
     const progressSession = async () => {
         try {
+            setIsLoading(true);
             const response = await fetch(`${process.env.REACT_APP_API_URL}/progress-session`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
             });
 
             const data = await response.json();
-            updateSession(data.currentSession);
-            console.log(`session count: ${data.sessionCount}`);
+            updateSession(data.characterCard);
+            console.log(`session count: ${data.characterCard.sessionCount}`);
             setCharacterMemory({
                 summary: "",
                 currentRepo: "",
@@ -50,6 +51,7 @@ export default function Chat({ selected, messages, setMessages, name, session, u
                 behaviorState: []
             });
             setMessages([]);
+            setIsLoading(false);
         } catch (error) {
         console.error("Failed to fetch:", error);
         }
@@ -173,6 +175,12 @@ export default function Chat({ selected, messages, setMessages, name, session, u
                             </button>
                         </div>
                     </div>
+                    {isLoading && (
+                        <div className="flex w-full h-full bg-white p-5 transparent-scrollbar justify-center items-center text-purple">
+                            processing request...
+                        </div>
+                    )}
+                    {!isLoading && (
                     <div className="flex-1 overflow-y-auto bg-white p-5 transparent-scrollbar">
                         {messages.map((msg, index) => (
                             <div
@@ -197,6 +205,7 @@ export default function Chat({ selected, messages, setMessages, name, session, u
                             </div>
                         ))}
                     </div>
+                    )}
                     {isTyping && (
                     <div className="italic text-gray-500 ml-2 p-2">{name} is typing...</div>
                     )}
