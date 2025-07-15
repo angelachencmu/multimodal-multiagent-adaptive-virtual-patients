@@ -1,0 +1,7 @@
+
+ # Terminal 1 - Frontend
+cd frontend
+npm start
+
+# Terminal 2 - Backend (CORRECT WAY)
+python3 -m uvicorn app.main:app --reload
