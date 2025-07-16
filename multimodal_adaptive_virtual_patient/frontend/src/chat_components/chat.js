@@ -173,8 +173,8 @@ export default function Chat({ selected, setSelected, messages, setMessages, nam
         }
 
         const formatted = saveMessage.map(msg => {
-            if (msg.role === "user") return `therapist: ${msg.content}`;
-            else if (msg.role === "assistant") return `patient: ${msg.content}`;
+            if (msg.role === "user") return `Therapist: ${msg.content}`;
+            else if (msg.role === "assistant") return `Patient: ${msg.content}`;
             else return `${msg.role}: ${msg.content}`;
         }).join("\n");
 
