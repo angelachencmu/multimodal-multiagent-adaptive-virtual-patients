@@ -36,6 +36,9 @@ export default function App() {
   }, []);
 
   const updateSession = (characterCard, snapMessages, SEM, characterMemory) => {
+    characterCard.identity = convertToThirdPerson(characterCard.identity, characterCard.name)
+    characterCard.keyBackground = convertToThirdPerson(characterCard.keyBackground, characterCard.name)
+
     setCharacterCard(characterCard);
 
     const snapshot = {
@@ -72,6 +75,10 @@ export default function App() {
         });
 
         const data = await response.json();
+
+        data.characterCard.identity = convertToThirdPerson(data.characterCard.identity, data.characterCard.name)
+        data.characterCard.keyBackground = convertToThirdPerson(data.characterCard.keyBackground, data.characterCard.name)
+
         setCharacterCard(data.characterCard);
 
         // Clear chat and name on character switch
@@ -83,6 +90,18 @@ export default function App() {
     }
   }
 
+  function convertToThirdPerson(textArray, name) {
+    const possessiveName = name.endsWith('s') ? `${name}'` : `${name}'s`;
+
+    return textArray.map(text =>
+      text
+        .replace(/\bYou['’]re\b/gi, `${name} is`)
+        .replace(/\bYou['’]ve\b/gi, `${name} has`)
+        .replace(/\bYou are\b/gi, `${name} is`)
+        .replace(/\bYou\b/gi, name)
+        .replace(/\bYour\b/gi, possessiveName)
+    );
+  }
 
   // Change character and clear chat
   const handleChangeCharacter = async (characterName) => {
@@ -94,6 +113,10 @@ export default function App() {
       });
 
       const data = await response.json();
+
+      data.characterCard.identity = convertToThirdPerson(data.characterCard.identity, characterName)
+      data.characterCard.keyBackground = convertToThirdPerson(data.characterCard.keyBackground, characterName)
+
       setCharacterCard(data.characterCard);
 
       // Clear chat and name on character switch

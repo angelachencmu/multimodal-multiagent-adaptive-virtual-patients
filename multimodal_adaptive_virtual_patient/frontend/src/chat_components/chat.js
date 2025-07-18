@@ -194,7 +194,7 @@ export default function Chat({ selected, setSelected, messages, setMessages, nam
     return (
         <div className="flex flex-col h-full w-full border p-4 rounded-xl shadow bg-white">
             <div className='flex flex-grow h-full'>
-                <div className='w-2/3 flex flex-col h-full'>
+                <div className='w-full flex flex-col h-full'>
                     <div className='h-16 bg-teal p-5 flex gap-5 items-center rounded-t-lg justify-between items-center'>
                         <div className='flex gap-5'>
                             <button
@@ -312,9 +312,9 @@ export default function Chat({ selected, setSelected, messages, setMessages, nam
                         </button>
                     </div>
                 </div>
-                <div className='w-1/3'>
+                {/* <div className='w-1/3'>
                     <CharacterMemory memoryInfo={characterMemoryDisplay} SEM = {SEMDisplay} />
-                </div>
+                </div> */}
             </div>
         </div>
     );

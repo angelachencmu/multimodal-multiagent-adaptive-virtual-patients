@@ -49,7 +49,7 @@ export default function CharacterProfile({ changeCharacter, characterCard }) {
                 <li key={index}>{item}</li>
             ))}
             </ul>
-            <h2><strong>Personality: </strong>{characterCard.personality}</h2>
+            {/* <h2><strong>Personality: </strong>{characterCard.personality}</h2>
             <h2><strong>Context: </strong></h2>
             <ul className="list-none">
                 {(characterCard.context ?? "(none)")
@@ -57,7 +57,7 @@ export default function CharacterProfile({ changeCharacter, characterCard }) {
                     .map((line, index) => (
                     <li key={index}>{line}</li>
                 ))}
-            </ul>
+            </ul> */}
         </div>
         <div className="flex-none flex flex-col border p-4 rounded-xl shadow bg-white w-full">
             <SEMSettingsForm/>
