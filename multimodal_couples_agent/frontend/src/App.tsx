@@ -290,29 +290,40 @@ const sendMessage = async () => {
     
     // Preload and auto play audio 
     const newAudioElements: { [key: string]: HTMLAudioElement } = {};
-    response.data.agent_responses.forEach((agent: AgentResponse, index: number) => {
+    const agentResponses = response.data.agent_responses;
+
+    agentResponses.forEach((agent: AgentResponse) => {
       const audio = new Audio(`${API_BASE}${agent.audio_url}`);
       newAudioElements[agent.audio_url] = audio;
-      
+    });
+
+    setAudioElements(prev => ({ ...prev, ...newAudioElements }));
+
+    // Sequential autoplay
+    const playSequentially = (index: number) => {
+      if (index >= agentResponses.length) return; // base case: done
+
+      const currentAgent = agentResponses[index];
+      const audio = newAudioElements[currentAgent.audio_url];
+
+      setPlayingAudio(currentAgent.audio_url);
+
       audio.onended = () => {
         setPlayingAudio(null);
-        // Auto play next agent's audio
-        if (index === 0 && response.data.agent_responses.length > 1) {
-          const nextAgent = response.data.agent_responses[1];
-          setTimeout(() => {
-            playAudio(nextAgent.audio_url);
-          }, 500);
-        }
-      };
-      
-      // Auto play first agent immediately
-      if (index === 0) {
         setTimeout(() => {
-          setPlayingAudio(agent.audio_url);
-          audio.play().catch(console.error);
-        }, 300);
-      }
-    });
+          playSequentially(index + 1); // play next agent
+        }, 500); // optional delay between voices
+      };
+
+      // Start playback
+      setTimeout(() => {
+        audio.play().catch(console.error);
+      }, 300); // optional delay before first plays
+    };
+
+    // Start autoplay chain
+    playSequentially(0);
+
     
     setAudioElements(prev => ({ ...prev, ...newAudioElements }));
 
@@ -326,51 +337,65 @@ const sendMessage = async () => {
       setInterruptState(false)
       setInCycle(true)
       while (!interruptRef.current) {
-        console.log("Auto-continue iteration");
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log("Auto-continue iteration");
 
-        try {
-          const continueResponse = await axios.post('/auto-continue', {
-            session_id: sessionId,
-            message: currentAgentData,
-          });
+      try {
+        const continueResponse = await axios.post('/auto-continue', {
+          session_id: sessionId,
+          message: currentAgentData,
+        });
 
-          if (interruptRef.current) {
-            console.log("Interrupted — discarding current loop response.");
-            break; 
-          }
-
-          // console.log('Auto-continue response:', continueResponse.data);
-          // console.log('Type of continueResponse.data:', typeof continueResponse.data);
-          // console.log('Is array:', Array.isArray(continueResponse.data));
-
-          const newAgentMessage: ChatMessage = {
-            type: 'agents',
-            content: '',
-            agents: [continueResponse.data],
-            timestamp: new Date(),
-            stage: continueResponse.data.stage,
-            eft_skill: continueResponse.data.eft_skill,
-            eft_subskill: continueResponse.data.eft_subskill,
-            difficulty: continueResponse.data.difficulty
-          };
-
-          setMessages(prev => [...prev, newAgentMessage]);
-          
-          // Update current agent data for next iteration
-          currentAgentData = [continueResponse.data];
-          console.log("Current Agent Data: ", currentAgentData);
-
-          if (interruptRef.current) {
-            console.log("Loop interrupted by user");
-            break;
-          }
-        } catch (error) {
-          console.error('Error in auto-continue:', error);
+        if (interruptRef.current) {
+          console.log("Interrupted — discarding current loop response.");
           break;
         }
+
+        const newAgentMessage: ChatMessage = {
+          type: 'agents',
+          content: '',
+          agents: [continueResponse.data],
+          timestamp: new Date(),
+          stage: continueResponse.data.stage,
+          eft_skill: continueResponse.data.eft_skill,
+          eft_subskill: continueResponse.data.eft_subskill,
+          difficulty: continueResponse.data.difficulty
+        };
+
+        setMessages(prev => [...prev, newAgentMessage]);
+
+        const audio = new Audio(`${API_BASE}${continueResponse.data.audio_url}`);
+        setPlayingAudio(continueResponse.data.audio_url);
+        setAudioElements(prev => ({
+          ...prev,
+          [continueResponse.data.audio_url]: audio
+        }));
+
+        await new Promise((resolveAudio, rejectAudio) => {
+          audio.onended = () => {
+            setPlayingAudio(null);
+            resolveAudio(null); 
+          };
+          audio.onerror = (e) => {
+            console.error("Audio error:", e);
+            setPlayingAudio(null);
+            resolveAudio(null); 
+          };
+
+          audio.play().catch((err) => {
+            console.error("Playback failed:", err);
+            resolveAudio(null);
+          });
+        });
+
+        currentAgentData = [continueResponse.data];
+      } catch (error) {
+        console.error('Error in auto-continue:', error);
+        break;
       }
-      setInCycle(false)
+    }
+
+    setInCycle(false);
+
     }
   } catch (error) {
     console.error('Error sending message:', error);
