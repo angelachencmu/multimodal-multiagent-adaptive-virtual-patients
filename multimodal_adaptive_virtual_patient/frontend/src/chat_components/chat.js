@@ -148,8 +148,15 @@ export default function Chat({ selected, setSelected, messages, setMessages, nam
         });
 
         const data = await response.json();
-        const botMessage = { role: "assistant", content: data.reply };
-        setMessages((prev) => [...prev, botMessage]);
+        const patientMessage = { role: "assistant", content: data.reply, audio: `${process.env.REACT_APP_API_URL}${data.tts}`};
+        setMessages((prev) => [...prev, patientMessage]);
+
+        console.log(`${process.env.REACT_APP_API_URL}${data.tts}`);
+        const audio = new Audio(`${process.env.REACT_APP_API_URL}${data.tts}`);
+        audio.play().catch((err) => {
+            console.error("Audio playback failed:", err);
+        });
+
         getCharacterMemory();
         getSEM();
         } catch (error) {
@@ -281,10 +288,24 @@ export default function Chat({ selected, setSelected, messages, setMessages, nam
                             ) : (
                                 <>
                                 <UserCircleIcon className="flex-shrink-0 h-10 w-10 text-blue" />
-                                <div className="ml-2 py-3 px-4 bg-blue rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-purple max-w-[70%]">
+                                
+                                <div className="flex ml-2 py-3 px-4 bg-blue rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-purple max-w-[70%]">
                                     {msg.content}
+                                    {msg.audio && (
+                                    <button
+                                        onClick={() => {
+                                        const audio = new Audio(msg.audio);
+                                        audio.play().catch(err => {
+                                            console.error("Audio playback failed:", err);
+                                        });
+                                        }}
+                                        className="h-8 text-sm text-purple px-2"
+                                    >
+                                        ▶ 
+                                    </button>
+                                    )}
                                 </div>
-                                </>
+                            </>
                             )}
                             </div>
                         ))}

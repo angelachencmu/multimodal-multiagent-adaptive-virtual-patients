@@ -9,7 +9,7 @@ import memory_room.ltm as ltm
 
 from memory_room.SEM.constants import DEFAULT_CONFIG
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -310,8 +310,23 @@ def chat():
     reply, messages = gpt.queryGPT(messages, message=userInput)
     globalCurrentUser.memory_room.processMemory(reply, userInput)
 
-    return jsonify({"reply": reply})
+    audio = gpt.getGPTtts(reply)
+
+    return jsonify({"reply": reply, "tts": audio})
+
+@app.route('/audio/<filename>')
+def serve_audio(filename):
+    return send_from_directory('audio', filename)
+
+def clear_audio_folder():
+    folder = "audio"
+    for filename in os.listdir(folder):
+        filepath = os.path.join(folder, filename)
+        if os.path.isfile(filepath):
+            os.remove(filepath)
+    print("Audio folder cleared.")
 
 if __name__ == "__main__":
+    clear_audio_folder()
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
