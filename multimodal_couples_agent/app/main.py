@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, Query
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from flask import request
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import os
@@ -41,6 +42,12 @@ app.mount("/audio", StaticFiles(directory="audio"), name="audio")
 class ChatRequest(BaseModel):
     session_id: str
     message: str
+    difficulty: Optional[str] = None
+    selected_agents: Optional[str] = "both"  # "both"
+
+class loopRequest(BaseModel):
+    session_id: str
+    message: List[Dict[str, Any]]
     difficulty: Optional[str] = None
     selected_agents: Optional[str] = "both"  # "both"
 
@@ -142,15 +149,15 @@ def detect_actual_speaker(message: str) -> str:
     # Check for Beta talking to Alpha 
     for pattern in beta_to_alpha_patterns:
         if pattern in message_lower:
-            return "Beta"
+            return "Beta", True
     
     # Check for Alpha talking to Beta 
     for pattern in alpha_to_beta_patterns:
         if pattern in message_lower:
-            return "Alpha"
+            return "Alpha", True
     
     # If no direct addressing is detected, assume it's the trainee
-    return "trainee"
+    return "trainee", False
 
 def check_session_completion(session: Dict[str, Any], new_stage: str) -> Dict[str, Any]:
     """
@@ -232,6 +239,9 @@ async def chat_endpoint(req: ChatRequest):
     stage_changed = old_stage != new_stage
     
     if stage_changed:
+        if old_stage != "Escalation" and new_stage == "Escalation":
+            session["disagreement_mode"] = True
+            session["disagreement_turns"] = 0
         # If moving out of Escalation stage, end disagreement mode
         if old_stage == "Escalation" and new_stage != "Escalation":
             if session.get("disagreement_mode", False):
@@ -301,7 +311,7 @@ async def chat_endpoint(req: ChatRequest):
     # Time for LLM response generation
     llm_start = time.time()
     # Detect who is actually speaking based on message content
-    actual_speaker = detect_actual_speaker(req.message)
+    actual_speaker, autoContinue = detect_actual_speaker(req.message)
     agent_texts = get_agent_responses(session, actual_speaker, req.message, selected_agents)
     llm_time = time.time() - llm_start
     
@@ -362,68 +372,31 @@ async def chat_endpoint(req: ChatRequest):
     # Determine disagreement status 
     disagreement_mode = session.get("disagreement_mode", False)
     disagreement_turns = session.get("disagreement_turns", 0)
+
+    print(f"""
+        disagreement mode: {disagreement_mode}
+        len agent responses: {len(agent_responses)}
+        stage: {session.get("stage", "Greeting")}
+        disagreement turns: {disagreement_turns}
+        """)
     
     # Agent-to-agent arguments during disagreement mode
     # Only autocontinue in specific escalation scenarios
     should_auto_continue = (
-        disagreement_mode and 
+        (disagreement_mode and 
         len(agent_responses) == 2 and
         session.get("stage", "Greeting") == "Escalation" and  # Only during escalation stage
-        disagreement_turns == 0 and  # Only on the very first turn of disagreement
-        not intervention_detected  # Don't auto continue if trainee intervened
+        disagreement_turns == 0) or
+        autoContinue  # Only on the very first turn of disagreement
     )
     
-    if should_auto_continue:
-        import time
-        auto_continue_start = time.time()
-        
-        # Use the first agent's response to trigger the second agent for back-and-forth
-        first_agent_response = agent_responses[0]
-        second_agent_response = agent_responses[1]
-        responding_agent_name = first_agent_response["name"]
-        
-        # Generate additional agent-to-agent response
-        llm_start = time.time()
-        from app.agents import get_agent_response
-        additional_agent_response = get_agent_response(
-            responding_agent_name, 
-            session, 
-            second_agent_response["name"], 
-            second_agent_response["text"], 
-            is_directly_addressed=False, 
-            other_agent_response=None
-        )
-        llm_time = time.time() - llm_start
-        
-        # Generate TTS for additional response
-        tts_start = time.time()
-        emotion = get_current_emotion(responding_agent_name, session["stage"])
-        
-        if skip_tts:
-            audio_url = f"/audio/placeholder_{responding_agent_name.lower()}.mp3"  # Placeholder
-        else:
-            audio_url = text_to_speech(additional_agent_response, responding_agent_name, emotion)
-            
-        tts_time = time.time() - tts_start
-        
-        # Add the additional response
-        agent_responses.append({
-            "name": responding_agent_name,
-            "text": additional_agent_response,
-            "audio_url": audio_url
-        })
-        
-        # Update session history
-        history_entry[responding_agent_name] = additional_agent_response
-        
-        auto_continue_time = time.time() - auto_continue_start
-        
-        # Update disagreement status
-        disagreement_mode = session.get("disagreement_mode", False)
-        disagreement_turns = session.get("disagreement_turns", 0)
+    # if should_auto_continue:
+    #     handle_auto_continue(agent_responses, session, history_entry)
     
     # Final timing summary (check how long it took to generate the response)
     total_time = time.time() - total_start
+
+    print(f"auto continue: {should_auto_continue}")
     
     response_data = {
         "agent_responses": agent_responses,
@@ -436,10 +409,64 @@ async def chat_endpoint(req: ChatRequest):
         "wrap_up_turns_remaining": wrap_up_turns_remaining,
         "disagreement_mode": disagreement_mode,
         "disagreement_turns": disagreement_turns,
-        "intervention_needed": intervention_detected
+        "intervention_needed": intervention_detected,
+        "should_auto_continue": should_auto_continue
     }
     
-    return response_data
+    return JSONResponse(content=response_data)
+
+import time
+from app.agents import get_agent_response
+
+@app.post("/auto-continue", response_model=Any)
+def handle_auto_continue(req: loopRequest):
+    print("entered auto continue")
+    session_id = req.session_id
+    agent_responses = req.message
+    print(agent_responses)
+
+    session = sessions[session_id]
+
+    # Extract first and second agent responses
+    first_agent_response = agent_responses[0]
+    latest_agent_response = first_agent_response
+    print("DEBUG: first_agent_response =", first_agent_response)
+    print("DEBUG: keys available =", first_agent_response.keys())
+    print(first_agent_response["name"])
+    responding_agent_name = first_agent_response["name"]
+
+    if (responding_agent_name == "Beta"):
+        responding_agent_name = "Alpha"
+    else:
+        responding_agent_name = "Beta"
+
+    if(len(agent_responses) > 1):
+        second_agent_response = agent_responses[1]
+        latest_agent_response = second_agent_response
+        first_agent_response = agent_responses[0]
+        responding_agent_name = first_agent_response["name"]
+
+    # Generate agent-to-agent response
+    additional_agent_response = get_agent_response(
+        responding_agent_name,
+        session,
+        latest_agent_response["name"],
+        latest_agent_response["text"],
+        is_directly_addressed=False,
+        other_agent_response=None
+    )
+
+    # Generate TTS
+    emotion = get_current_emotion(responding_agent_name, session["stage"])
+
+    audio_url = text_to_speech(additional_agent_response, responding_agent_name, emotion)
+
+    return {
+        "name": responding_agent_name,
+        "text": additional_agent_response,
+        "audio_url": audio_url
+    }
+
 
 @app.get("/stage")
 def get_stage(session_id: str = Query(...)):

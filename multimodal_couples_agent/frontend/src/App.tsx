@@ -116,8 +116,18 @@ const Avatar: React.FC<{ name: string; emotion: string; isActive: boolean; size?
 function App() {
   const [sessionId, setSessionId] = useState(`session-${Date.now()}`);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [interrupt, setInterrupt] = useState(false);
+  const interruptRef = useRef(false);
+
+  const setInterruptState = (value: boolean) => {
+    interruptRef.current = value;
+    setInterrupt(value);
+  };
+
+
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [inCycle, setInCycle] = useState(false);
   const [sessionInfo, setSessionInfo] = useState<SessionInfo>({ stage: 'Greeting', eft_skill: '', eft_subskill: undefined, difficulty: 'normal' });
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [audioElements, setAudioElements] = useState<{ [key: string]: HTMLAudioElement }>({});
@@ -140,6 +150,26 @@ function App() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  
+  // useEffect(() => {
+  //   console.log("Updated messages:", messages);
+
+  //   // Optional: log just agent text for clarity
+  //   messages.forEach((message, i) => {
+  //     if (message.type === 'agents' || message.type === 'completion') {
+  //       message.agents?.forEach((agent, j) => {
+  //         console.log(`Message ${i}.${j} - ${agent.name}: ${agent.text}`);
+  //       });
+  //     } else if (message.type === 'user') {
+  //       console.log(`Message ${i} - User: ${message.content}`);
+  //     }
+  //   });
+  // }, [messages]);
+
+  useEffect(() => {
+    console.log("Cycle Interupted", interrupt);
+  }, [interrupt]);
 
  
   // Maping emotions by session stage
@@ -183,116 +213,172 @@ function App() {
     setAgentEmotions(newEmotions);
   }, [sessionInfo.stage]);
 
-
-
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
+const sendMessage = async () => {
+  if (!inputMessage.trim()) return;
 
+  console.log(messages);
+  setInterruptState(true)
 
-  const sendMessage = async () => {
-    if (!inputMessage.trim()) return;
+  const userMessage: ChatMessage = {
+    type: 'user',
+    content: inputMessage,
+    timestamp: new Date(),
+    selectedAgents: selectedAgents
+  };
 
-    const userMessage: ChatMessage = {
-      type: 'user',
-      content: inputMessage,
+  setMessages(prev => [...prev, userMessage]);
+  setIsLoading(true);
+
+  try {
+    const response = await axios.post('/chat', {
+      session_id: sessionId,
+      message: inputMessage,
+      selected_agents: selectedAgents
+    });
+
+    // Update session info 
+    const newSessionInfo = {
+      stage: response.data.current_stage || 'Greeting',
+      eft_skill: response.data.eft_skill || '',
+      eft_subskill: response.data.eft_subskill,
+      difficulty: response.data.difficulty || 'normal'
+    };
+    
+    setSessionInfo(newSessionInfo);
+
+    const initialAgentMessage: ChatMessage = {
+      type: 'agents',
+      content: '',
+      agents: response.data.agent_responses,
       timestamp: new Date(),
-      selectedAgents: selectedAgents
+      stage: response.data.current_stage,
+      eft_skill: response.data.eft_skill,
+      eft_subskill: response.data.eft_subskill,
+      difficulty: response.data.difficulty
     };
 
-    setMessages(prev => [...prev, userMessage]);
-    setIsLoading(true);
-
-    try {
-      const response = await axios.post('/chat', {
-        session_id: sessionId,
-        message: inputMessage,
-        selected_agents: selectedAgents
-      });
-
-      // Update session info 
-      const newSessionInfo = {
-        stage: response.data.current_stage || 'Greeting',
-        eft_skill: response.data.eft_skill || '',
+    // Handle session completion
+    if (response.data.is_completed) {
+      setIsSessionCompleted(true);
+      setWrapUpTurnsRemaining(0);
+      
+      const completionMessage: ChatMessage = {
+        type: 'completion',
+        content: response.data.completion_message || 'Session completed!',
+        agents: response.data.agent_responses,
+        timestamp: new Date(),
+        stage: response.data.current_stage,
+        eft_skill: response.data.eft_skill,
         eft_subskill: response.data.eft_subskill,
-        difficulty: response.data.difficulty || 'normal'
+        difficulty: response.data.difficulty,
+        isCompleted: true,
+        completionMessage: response.data.completion_message
+      };
+
+      setMessages(prev => [...prev, completionMessage]);
+    } else {
+      // Update wrap-up turns 
+      setWrapUpTurnsRemaining(response.data.wrap_up_turns_remaining);
+
+      console.log('Initial agent message:', initialAgentMessage);
+      setMessages(prev => [...prev, initialAgentMessage]);
+    }
+    
+    // Preload and auto play audio 
+    const newAudioElements: { [key: string]: HTMLAudioElement } = {};
+    response.data.agent_responses.forEach((agent: AgentResponse, index: number) => {
+      const audio = new Audio(`${API_BASE}${agent.audio_url}`);
+      newAudioElements[agent.audio_url] = audio;
+      
+      audio.onended = () => {
+        setPlayingAudio(null);
+        // Auto play next agent's audio
+        if (index === 0 && response.data.agent_responses.length > 1) {
+          const nextAgent = response.data.agent_responses[1];
+          setTimeout(() => {
+            playAudio(nextAgent.audio_url);
+          }, 500);
+        }
       };
       
-      setSessionInfo(newSessionInfo);
-
-      // Handle session completion
-      if (response.data.is_completed) {
-        setIsSessionCompleted(true);
-        setWrapUpTurnsRemaining(0);
-        
-        const completionMessage: ChatMessage = {
-          type: 'completion',
-          content: response.data.completion_message || 'Session completed!',
-          agents: response.data.agent_responses,
-          timestamp: new Date(),
-          stage: response.data.current_stage,
-          eft_skill: response.data.eft_skill,
-          eft_subskill: response.data.eft_subskill,
-          difficulty: response.data.difficulty,
-          isCompleted: true,
-          completionMessage: response.data.completion_message
-        };
-
-        setMessages(prev => [...prev, completionMessage]);
-      } else {
-        // Update wrap-up turns 
-        setWrapUpTurnsRemaining(response.data.wrap_up_turns_remaining);
-        
-        const agentMessage: ChatMessage = {
-          type: 'agents',
-          content: '',
-          agents: response.data.agent_responses,
-          timestamp: new Date(),
-          stage: response.data.current_stage,
-          eft_skill: response.data.eft_skill,
-          eft_subskill: response.data.eft_subskill,
-          difficulty: response.data.difficulty
-        };
-
-        setMessages(prev => [...prev, agentMessage]);
+      // Auto play first agent immediately
+      if (index === 0) {
+        setTimeout(() => {
+          setPlayingAudio(agent.audio_url);
+          audio.play().catch(console.error);
+        }, 300);
       }
-      
-      // Preload and auto play audio 
-      const newAudioElements: { [key: string]: HTMLAudioElement } = {};
-      response.data.agent_responses.forEach((agent: AgentResponse, index: number) => {
-        const audio = new Audio(`${API_BASE}${agent.audio_url}`);
-        newAudioElements[agent.audio_url] = audio;
-        
-        audio.onended = () => {
-          setPlayingAudio(null);
-          // Auto play next agent's audio
-          if (index === 0 && response.data.agent_responses.length > 1) {
-            const nextAgent = response.data.agent_responses[1];
-            setTimeout(() => {
-              playAudio(nextAgent.audio_url);
-            }, 500);
+    });
+    
+    setAudioElements(prev => ({ ...prev, ...newAudioElements }));
+
+    console.log(response.data);
+
+    // Handle auto-continue loop
+    if (response.data.should_auto_continue) {
+      console.log("Starting auto-continue loop");
+      let currentAgentData = response.data.agent_responses;
+      // let updatedAgentMessage: ChatMessage = { ...initialAgentMessage };
+      setInterruptState(false)
+      setInCycle(true)
+      while (!interruptRef.current) {
+        console.log("Auto-continue iteration");
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        try {
+          const continueResponse = await axios.post('/auto-continue', {
+            session_id: sessionId,
+            message: currentAgentData,
+          });
+
+          if (interruptRef.current) {
+            console.log("Interrupted — discarding current loop response.");
+            break; 
           }
-        };
-        
-        // Auto play first agent immediately
-        if (index === 0) {
-          setTimeout(() => {
-            setPlayingAudio(agent.audio_url);
-            audio.play().catch(console.error);
-          }, 300);
+
+          // console.log('Auto-continue response:', continueResponse.data);
+          // console.log('Type of continueResponse.data:', typeof continueResponse.data);
+          // console.log('Is array:', Array.isArray(continueResponse.data));
+
+          const newAgentMessage: ChatMessage = {
+            type: 'agents',
+            content: '',
+            agents: [continueResponse.data],
+            timestamp: new Date(),
+            stage: continueResponse.data.stage,
+            eft_skill: continueResponse.data.eft_skill,
+            eft_subskill: continueResponse.data.eft_subskill,
+            difficulty: continueResponse.data.difficulty
+          };
+
+          setMessages(prev => [...prev, newAgentMessage]);
+          
+          // Update current agent data for next iteration
+          currentAgentData = [continueResponse.data];
+          console.log("Current Agent Data: ", currentAgentData);
+
+          if (interruptRef.current) {
+            console.log("Loop interrupted by user");
+            break;
+          }
+        } catch (error) {
+          console.error('Error in auto-continue:', error);
+          break;
         }
-      });
-      
-      setAudioElements(prev => ({ ...prev, ...newAudioElements }));
-      
-    } catch (error) {
-      console.error('Error sending message:', error);
-    } finally {
-      setIsLoading(false);
-      setInputMessage('');
+      }
+      setInCycle(false)
     }
-  };
+  } catch (error) {
+    console.error('Error sending message:', error);
+  } finally {
+    setIsLoading(false);
+    setInputMessage('');
+  }
+};
 
   const playAudio = (audioUrl: string) => {
     // Stop any currently playing audio
