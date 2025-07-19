@@ -3,7 +3,7 @@ from memory_room.SEM.constants import SELF_DISCLOSURE_INSTRUCTIONS, ANXIETY_INST
 import gpt 
 
 class character:
-    def __init__(self, name, identity, keyBackground, personality, system, context, sessions):
+    def __init__(self, name, identity, keyBackground, personality, system, context, sessions, ttsInstruction, ttsVoice):
         # static
         self.name = name
         self.identity = identity
@@ -13,6 +13,8 @@ class character:
         self.sessionCount = 1
         self.sessions = sessions
         self.context = context
+        self.ttsInstruction = ttsInstruction
+        self.ttsVoice = ttsVoice
 
         # dynamic
         self.memory_room = MemoryRoom()

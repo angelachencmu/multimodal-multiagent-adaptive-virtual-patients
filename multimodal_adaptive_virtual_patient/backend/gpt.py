@@ -33,14 +33,14 @@ def getGPTEmbedding(text):
     embedding = response.data[0].embedding
     return embedding
 
-def getGPTtts(text, instructions = "Speak in a cheerful and positive tone."):
+def getGPTtts(text, voice, instructions):
     try:
         filename = f"{uuid4().hex}.mp3"
         filepath = os.path.join(AUDIO_DIR, filename)
 
         with client.audio.speech.with_streaming_response.create(
         model="gpt-4o-mini-tts",
-        voice="alloy",
+        voice=voice,
         input=text,
         instructions=instructions,
         ) as response:

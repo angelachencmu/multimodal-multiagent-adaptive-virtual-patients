@@ -37,7 +37,11 @@ def getAlex():
             Don't say this immediately: You haven't thought about how you would actually kill yourself
             At some point, you should say "It sounds weird, but I feel like I still see him"
         """
-        ]
+        ],
+        "ttsInstruction": """
+            Sound very emotionally expressive and put emphasis on subject words within a sentence.
+        """,
+        "ttsVoice": "nova"
     }
 
 def getSteph():
@@ -61,7 +65,11 @@ def getSteph():
             You’ve tried talking to a therapist, but you can't leave the house and it makes you depressed to call on your computer     
             You don't even know what you would say, it's not like they can help with the pain anyways
         """
-        ]
+        ],
+        "ttsInstruction": """
+            Sound really monotone and unexpressive with a depressive tone. You are an older 60 year old man.
+        """,
+        "ttsVoice": "ballad"
     }
 
 def getSam():
@@ -93,7 +101,11 @@ def getSam():
             looking at the fire and thinking about ways that you could die or, it feels hard to say, like kill yourself.
             Sometimes you get in this dark space. Like it’s hard to go on
         """
-        ]
+        ],
+        "ttsInstruction": """
+            Sound dessperate and defensive in the way you talk.
+        """,
+        "ttsVoice": "sage"
     }
 
 def getTheo():
@@ -123,7 +135,11 @@ def getTheo():
             You haven’t talked to anyone at school about it. You feel kind of scared to bring it up for some reason. It’s easier to
             talk about it online with me
         """
-        ]
+        ],
+        "ttsInstruction": """
+           Have more animated style of speaking. You are a 14 year old boy.
+        """,
+        "ttsVoice": "shimmer"
     }
 
 def makeCharacter(getFunc):
@@ -135,7 +151,9 @@ def makeCharacter(getFunc):
         card["personality"],
         card["system"],
         card["context"],
-        card["sessions"]
+        card["sessions"],
+        card["ttsInstruction"],
+        card["ttsVoice"]
     )
 
 get_funcs = [getAlex, getSteph, getSam, getTheo]
@@ -310,7 +328,7 @@ def chat():
     reply, messages = gpt.queryGPT(messages, message=userInput)
     globalCurrentUser.memory_room.processMemory(reply, userInput)
 
-    audio = gpt.getGPTtts(reply)
+    audio = gpt.getGPTtts(reply, globalCurrentUser.ttsVoice, globalCurrentUser.ttsInstruction)
 
     return jsonify({"reply": reply, "tts": audio})
 
